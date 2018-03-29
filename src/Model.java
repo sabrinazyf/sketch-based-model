@@ -1,4 +1,5 @@
 import java.util.LinkedList;
+import java.util.Arrays;
 
 public class Model {
     private Polygon basedPolygon;
@@ -6,9 +7,22 @@ public class Model {
     private LinkedList<Triangle> modelTriangleLink = new LinkedList<>();
     private LinkedList<Axis> modelAxis = new LinkedList<>();
     private LinkedList<Axis> edgePointMap = new LinkedList<>();
-    private float[] vertexCoords;
-    private int[] elementArray;
-    private int[] edgeElementArray;
+    private LinkedList<Point> vertexPoint = new LinkedList<>();
+    private float[] vertexCoords = {};
+    private float[] triCoords = {};
+    private int[] elementArray = {};
+
+    public float[] getTriCoords() {
+        return triCoords;
+    }
+
+    public float[] getVertexCoords() {
+        return vertexCoords;
+    }
+
+    public int[] getElementArray() {
+        return elementArray;
+    }
 
     private LinkedList<Line> modelLine = new LinkedList<>();
 
@@ -144,6 +158,7 @@ public class Model {
         edgePointMap = new LinkedList<>();
         modelLine = new LinkedList<>();
         modelTriangleLink = new LinkedList<>();
+        triCoords = new float[0];
     }
 
     //构造椭圆的边
@@ -174,10 +189,16 @@ public class Model {
             isAdd = isAddTriangle(0, new Triangle(beginList.get(i), endList.get(i), endList.get(i + 1)));
             if (isAdd) {
                 modelTriangle.add(new Triangle(beginList.get(i).mirrorPoint(), endList.get(i).mirrorPoint(), endList.get(i + 1).mirrorPoint()));
+//                buildVAO(beginList.get(i), endList.get(i), endList.get(i + 1));
+//                addTri(beginList.get(i), endList.get(i), endList.get(i + 1));
+//                addTri(beginList.get(i).mirrorPoint(), endList.get(i).mirrorPoint(), endList.get(i + 1).mirrorPoint());
             }
             isAdd = isAddTriangle(0, new Triangle(beginList.get(i + 1), endList.get(i + 1), beginList.get(i)));
             if (isAdd) {
                 modelTriangle.add(new Triangle(beginList.get(i + 1).mirrorPoint(), endList.get(i + 1).mirrorPoint(), beginList.get(i).mirrorPoint()));
+//                buildVAO(beginList.get(i + 1), endList.get(i + 1), beginList.get(i));
+//                addTri(beginList.get(i + 1), endList.get(i + 1), beginList.get(i));
+//                addTri(beginList.get(i + 1).mirrorPoint(), endList.get(i + 1).mirrorPoint(), beginList.get(i).mirrorPoint());
             }
         }
     }
@@ -189,17 +210,25 @@ public class Model {
         isAdd = isAddTriangle(0, new Triangle(edgePointMap.get(edgePointIndex).getBasedPoint(), beginList.getLast(), endList.getLast()));
         if (isAdd) {
             modelTriangle.add(new Triangle(edgePointMap.get(edgePointIndex).getBasedPoint().mirrorPoint(), beginList.getLast().mirrorPoint(), endList.getLast().mirrorPoint()));
+//            buildVAO(edgePointMap.get(edgePointIndex).getBasedPoint(), beginList.getLast(), endList.getLast());
+//            addTri(edgePointMap.get(edgePointIndex).getBasedPoint(), beginList.getLast(), endList.getLast());
+//            addTri(edgePointMap.get(edgePointIndex).getBasedPoint().mirrorPoint(), beginList.getLast().mirrorPoint(), endList.getLast().mirrorPoint());
         }
         addInsideTriangle(beginList, endList);
-//        addInsideTriangle(endList, beginList);
 
         isAdd = isAddTriangle(0, new Triangle(beginList.get(0), endList.get(0), modelAxis.get(axisIndexEnd).getLiftPoint()));
         if (isAdd) {
             modelTriangle.add(0, new Triangle(beginList.get(0).mirrorPoint(), endList.get(0).mirrorPoint(), modelAxis.get(axisIndexEnd).getLiftPoint().mirrorPoint()));
+//            buildVAO(beginList.get(0), endList.get(0), modelAxis.get(axisIndexEnd).getLiftPoint());
+//            addTri(beginList.get(0), endList.get(0), modelAxis.get(axisIndexEnd).getLiftPoint());
+//            addTri(beginList.get(0).mirrorPoint(), endList.get(0).mirrorPoint(), modelAxis.get(axisIndexEnd).getLiftPoint().mirrorPoint());
         }
         isAdd = isAddTriangle(0, new Triangle(beginList.get(0), modelAxis.get(axisIndexEnd).getLiftPoint(), modelAxis.get(axisIndexBegin).getLiftPoint()));
         if (isAdd) {
             modelTriangle.add(new Triangle(beginList.get(0).mirrorPoint(), modelAxis.get(axisIndexEnd).getLiftPoint().mirrorPoint(), modelAxis.get(axisIndexBegin).getLiftPoint().mirrorPoint()));
+//            buildVAO(beginList.get(0), modelAxis.get(axisIndexEnd).getLiftPoint(), modelAxis.get(axisIndexBegin).getLiftPoint());
+//            addTri(beginList.get(0), modelAxis.get(axisIndexEnd).getLiftPoint(), modelAxis.get(axisIndexBegin).getLiftPoint());
+//            addTri(beginList.get(0).mirrorPoint(), modelAxis.get(axisIndexEnd).getLiftPoint().mirrorPoint(), modelAxis.get(axisIndexBegin).getLiftPoint().mirrorPoint());
         }
     }
 
@@ -207,20 +236,28 @@ public class Model {
         LinkedList<Point> beginList = edgePointMap.get(edgeIndexBegin).getEllipsePoint().get(axisPointIndex);
         LinkedList<Point> endList = edgePointMap.get(edgeIndexEnd).getEllipsePoint().get(axisPointIndex);
         boolean isAdd;
-        Triangle T = new Triangle(modelAxis.get(axisPointIndex).getLiftPoint(), beginList.getFirst(), endList.getFirst());
         isAdd = isAddTriangle(1, new Triangle(modelAxis.get(axisPointIndex).getLiftPoint(), beginList.getFirst(), endList.getFirst()));
         if (isAdd) {
             modelTriangleLink.add(new Triangle(modelAxis.get(axisPointIndex).getLiftPoint().mirrorPoint(), beginList.getFirst().mirrorPoint(), endList.getFirst().mirrorPoint()));
+//            buildVAO(modelAxis.get(axisPointIndex).getLiftPoint(), beginList.getFirst(), endList.getFirst());
+//            addTri(modelAxis.get(axisPointIndex).getLiftPoint(), beginList.getFirst(), endList.getFirst());
+//            addTri(modelAxis.get(axisPointIndex).getLiftPoint().mirrorPoint(), beginList.getFirst().mirrorPoint(), endList.getFirst().mirrorPoint());
         }
         addInsideTriangle(endList, beginList);
 
         isAdd = isAddTriangle(1, new Triangle(beginList.getLast(), endList.getLast(), edgePointMap.get(edgeIndexEnd).getBasedPoint()));
         if (isAdd) {
             modelTriangleLink.add(new Triangle(beginList.getLast().mirrorPoint(), endList.getLast().mirrorPoint(), edgePointMap.get(edgeIndexEnd).getBasedPoint().mirrorPoint()));
+//            buildVAO(beginList.getLast(), endList.getLast(), edgePointMap.get(edgeIndexEnd).getBasedPoint());
+//            addTri(beginList.getLast(), endList.getLast(), edgePointMap.get(edgeIndexEnd).getBasedPoint());
+//            addTri(beginList.getLast().mirrorPoint(), endList.getLast().mirrorPoint(), edgePointMap.get(edgeIndexEnd).getBasedPoint().mirrorPoint());
         }
         isAdd = isAddTriangle(1, new Triangle(beginList.getLast(), edgePointMap.get(edgeIndexEnd).getBasedPoint(), edgePointMap.get(edgeIndexBegin).getBasedPoint()));
         if (isAdd) {
             modelTriangleLink.add(new Triangle(beginList.getLast().mirrorPoint(), edgePointMap.get(edgeIndexEnd).getBasedPoint().mirrorPoint(), edgePointMap.get(edgeIndexBegin).getBasedPoint().mirrorPoint()));
+//            buildVAO(beginList.getLast(), edgePointMap.get(edgeIndexEnd).getBasedPoint(), edgePointMap.get(edgeIndexBegin).getBasedPoint());
+//            addTri(beginList.getLast(), edgePointMap.get(edgeIndexEnd).getBasedPoint(), edgePointMap.get(edgeIndexBegin).getBasedPoint());
+//            addTri(beginList.getLast().mirrorPoint(), edgePointMap.get(edgeIndexEnd).getBasedPoint().mirrorPoint(), edgePointMap.get(edgeIndexBegin).getBasedPoint().mirrorPoint());
         }
     }
 
@@ -276,10 +313,89 @@ public class Model {
         return false;
     }
 
+    private void addTri(Point p0, Point p1, Point p2) {
+        int index = triCoords.length;
+        float newCoords[] = new float[index + 9];
+        System.arraycopy(triCoords, 0, newCoords, 0, index);
+        newCoords[index] = (float) p0.getX();
+        newCoords[index + 1] = (float) p0.getY();
+        newCoords[index + 2] = (float) p0.getZ();
+        newCoords[index + 3] = (float) p1.getX();
+        newCoords[index + 4] = (float) p1.getY();
+        newCoords[index + 5] = (float) p1.getZ();
+        newCoords[index + 6] = (float) p2.getX();
+        newCoords[index + 7] = (float) p2.getY();
+        newCoords[index + 8] = (float) p2.getZ();
+        triCoords = newCoords;
+    }
+
+
+    private int findIndex(Point p) {
+        int index = -1;
+        for (int i = 0; i < vertexPoint.size(); i++) {
+            if (p.equal(vertexPoint.get(i))) {
+                index = i;
+                break;
+            }
+        }
+        return index;
+    }
+
+    private void addPoint(Point p) {
+        boolean isInside = false;
+        if (vertexPoint.size() != 0) {
+            for (Point i : vertexPoint) {
+                if (i.equal(p)) {
+                    isInside = true;
+                    break;
+                }
+            }
+        }
+        if (!isInside) {
+            vertexPoint.add(p);
+            int index = vertexCoords.length;
+            float newVertexCoords[] = new float[index + 3];
+            System.arraycopy(vertexCoords, 0, newVertexCoords, 0, index);
+            newVertexCoords[index] = (float) p.getX();
+            newVertexCoords[index + 1] = (float) p.getY();
+            newVertexCoords[index + 2] = (float) p.getZ();
+            vertexCoords = newVertexCoords;
+            if (Math.abs(p.getZ()) >= 0.00000001) {
+                vertexPoint.add(p.mirrorPoint());
+                index = vertexCoords.length;
+                newVertexCoords = new float[index + 3];
+                System.arraycopy(vertexCoords, 0, newVertexCoords, 0, index);
+                newVertexCoords[index] = (float) p.mirrorPoint().getX();
+                newVertexCoords[index + 1] = (float) p.mirrorPoint().getY();
+                newVertexCoords[index + 2] = (float) p.mirrorPoint().getZ();
+                vertexCoords = newVertexCoords;
+            }
+        }
+
+    }
+
+
+    private void buildVAO(Point p0, Point p1, Point p2) {
+        addPoint(p0);
+        addPoint(p1);
+        addPoint(p2);
+        int index = elementArray.length;
+        int newIndex[] = new int[index + 6];
+        System.arraycopy(elementArray, 0, newIndex, 0, index);
+        newIndex[index] = findIndex(p0);
+        newIndex[index + 1] = findIndex(p1);
+        newIndex[index + 2] = findIndex(p2);
+        newIndex[index + 3] = findIndex(p0.mirrorPoint());
+        newIndex[index + 4] = findIndex(p1.mirrorPoint());
+        newIndex[index + 5] = findIndex(p2.mirrorPoint());
+        elementArray = newIndex;
+    }
 
     public void buildSketchModel() {
         countBasedPolygon();
+        System.out.println("Count OK");
         lifting();
+        System.out.println("Lifting OK");
         for (int i = 0; i < basedPolygon.getPolygonPoint().size(); i++) {
             for (int j : edgePointMap.get(i).getLinkedPointIndex()) {
                 LinkedList<Point> tempList = buildEllipse(modelAxis.get(j).getAxisHeight(), basedPolygon.getPolygonPoint().get(i), modelAxis.get(j).getBasedPoint());
@@ -303,13 +419,6 @@ public class Model {
                 addTriangleInSinglePoint(i, edgePointMap.get(i).getLinkedPointIndex().getFirst(), edgePointMap.get(i).getLinkedPointIndex().getLast());
             }
             if (size > 2) {
-//                for (int m : edgePointMap.get(i).getLinkedPointIndex()) {
-//                    for (int n : edgePointMap.get(i).getLinkedPointIndex()) {
-//                        if (m != n && isOnAxis(modelAxis.get(m).getBasedPoint(), modelAxis.get(n).getBasedPoint())) {
-//                            addTriangleInSinglePoint(i, m, n);
-//                        }
-//                    }
-//                }
                 for (int m = 0; m < edgePointMap.get(i).getLinkedPointIndex().size(); m++) {
                     for (int n = m + 1; n < edgePointMap.get(i).getLinkedPointIndex().size(); n++) {
                         if (edgePointMap.get(i).getLinkedPointIndex().get(m) != edgePointMap.get(i).getLinkedPointIndex().get(n) && isOnAxis(modelAxis.get(edgePointMap.get(i).getLinkedPointIndex().get(m)).getBasedPoint(), modelAxis.get(edgePointMap.get(i).getLinkedPointIndex().get(n)).getBasedPoint())) {
@@ -324,5 +433,12 @@ public class Model {
             }
         }
         System.out.println("Building Step 2");
+        for (Triangle T : modelTriangle) {
+            addTri(T.getA(),T.getB(),T.getC());
+        }
+        for (Triangle T : modelTriangleLink) {
+            addTri(T.getA(),T.getB(),T.getC());
+        }
+        System.out.println("Building Step 3");
     }
 }

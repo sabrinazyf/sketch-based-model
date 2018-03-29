@@ -3,6 +3,18 @@ import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.glu.GLU;
+import com.jogamp.common.nio.Buffers;
+
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+
+import com.jogamp.opengl.*;
+import com.jogamp.opengl.awt.*;
+import com.jogamp.common.nio.Buffers;
+
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 //import com.jogamp.newt.event.KeyListener;
 import java.awt.event.*;
@@ -68,17 +80,17 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
         gl.glEnable(GL_COLOR_MATERIAL);
         gl.glLightModeli(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 
-        gl.glEnable( GL2.GL_LIGHTING );
-        gl.glEnable( GL2.GL_LIGHT0 );
+        gl.glEnable(GL2.GL_LIGHTING);
+        gl.glEnable(GL2.GL_LIGHT0);
         gl.glEnable(GL_AUTO_NORMAL);
-        gl.glEnable( GL2.GL_NORMALIZE );
+        gl.glEnable(GL2.GL_NORMALIZE);
         // weak RED ambient
-        float[] ambientLight = { 0.1f, 0.f, 0.f,0f };
+        float[] ambientLight = {0.1f, 0.f, 0.f, 0f};
         gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_AMBIENT, ambientLight, 0);
 
         // multicolor diffuse
-        float[] diffuseLight = { 1f,2f,1f,0f };
-        gl.glLightfv( GL2.GL_LIGHT0, GL2.GL_DIFFUSE, diffuseLight, 0 );
+        float[] diffuseLight = {1f, 2f, 1f, 0f};
+        gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_DIFFUSE, diffuseLight, 0);
 
     }
 
@@ -106,6 +118,7 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
     public void display(GLAutoDrawable drawable) {
         gl = drawable.getGL().getGL2();
         gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        gl.glShadeModel(GL_SMOOTH);
         gl.glLoadIdentity(); // reset the model-view matrix
         selectMode(gl);
 
@@ -246,7 +259,20 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
             }
 
         }
-        if (renderMode == SHOW_TRIANGLE_MODE || renderMode == SHOW_MODEL_MODE || renderMode == CUT_MODE || renderMode == SHOW_LIFT_MODE) {
+
+        if (renderMode == SHOW_MODEL_MODE) {
+            FloatBuffer triCoordBuffer = Buffers.newDirectFloatBuffer(renderModel.getTriCoords());
+            gl.glVertexPointer(3, GL2.GL_FLOAT, 0, triCoordBuffer);  // Set data type and location, first Tri.
+            gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
+//        gl2.glEnableClientState( GL2.GL_COLOR_ARRAY );
+            gl.glColor3f(131 / 255.0f, 205 / 255.0f, 1.0f);
+            int size = renderModel.getTriCoords().length / 3;
+//            System.out.println(renderModel.getTriCoords().length);
+//            System.out.println(size/3);
+            gl.glDrawArrays(GL2.GL_TRIANGLES, 0, size); // Draw the first cube!
+        }
+
+        if (renderMode == SHOW_TRIANGLE_MODE || renderMode == CUT_MODE || renderMode == SHOW_LIFT_MODE) {
             for (int i = 0; i < renderModel.getModelTriangle().size(); i++) {
                 if (renderMode != SHOW_LIFT_MODE) {
                     selectColor(i, gl);
@@ -256,7 +282,6 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
                     gl.glVertex3f((float) renderModel.getModelTriangle().get(i).getC().getX(), (float) renderModel.getModelTriangle().get(i).getC().getY(), (float) renderModel.getModelTriangle().get(i).getC().getZ());
                     gl.glEnd();
                 }
-
                 if (renderMode != SHOW_MODEL_MODE) {
                     gl.glColor3f(0.0f, 0.0f, 0.0f);
                     gl.glEnable(GL_LINE_SMOOTH);
@@ -481,7 +506,7 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
 //        } else {
 //            gl.glColor3f(216 / 255.0f, 230 / 255.0f, 1.0f);
 //        }
-                    gl.glColor3f(131 / 255.0f, 205 / 255.0f, 1.0f);
+        gl.glColor3f(131 / 255.0f, 205 / 255.0f, 1.0f);
 //                    gl.glColor3f(164 / 255.0f, 230 / 255.0f, 1.0f);
 //                    gl.glColor3f(216 / 255.0f, 230 / 255.0f, 1.0f);
 
@@ -684,6 +709,8 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
         if (renderMode < 8) {
             if (renderMode == 7) {
                 renderMode = 0;
+            } else if (renderMode == 4) {
+                renderMode += 2;
             } else {
                 renderMode++;
             }

@@ -141,12 +141,13 @@ public class CubesWithVertexArrays extends GLJPanel implements GLEventListener, 
         gl2.glRotated(rotateZ,0,0,1);     // Apply rotations.
         gl2.glRotated(rotateY,0,1,0);
         gl2.glRotated(rotateX,1,0,0);
+//        gl2.glColor3f(1.0f, 0.0f, 0.0f);
 
         gl2.glVertexPointer( 3, GL2.GL_FLOAT, 0, cubeCoordBuffer );  // Set data type and location, first cube.
-        gl2.glColorPointer( 3,GL2. GL_FLOAT, 0, cubeFaceColorBuffer );
+//        gl2.glColorPointer( 3,GL2. GL_FLOAT, 0, cubeFaceColorBuffer );
 
         gl2.glEnableClientState( GL2.GL_VERTEX_ARRAY );
-        gl2.glEnableClientState( GL2.GL_COLOR_ARRAY );
+//        gl2.glEnableClientState( GL2.GL_COLOR_ARRAY );
 
         gl2.glDrawArrays( GL2.GL_QUADS, 0, 24 ); // Draw the first cube!
 
@@ -154,28 +155,28 @@ public class CubesWithVertexArrays extends GLJPanel implements GLEventListener, 
         // Second cube, using glDrawElements.  Also draw the cube edges, and enable polygon offset
         // while the faces of the cube are being drawn.
 
-        gl2.glLoadIdentity();             // Set up modelview transform, first cube.
-
-        gl2. glTranslated(2, 0, 0);      // Move cube to right half of window.
-
-        gl2.glRotated(rotateZ,0,0,1);     // Apply rotations.
-        gl2.glRotated(rotateY,0,1,0);
-        gl2.glRotated(rotateX,1,0,0);
-
-        gl2.glVertexPointer( 3, GL2.GL_FLOAT, 0, vertexCoordBuffer );  // Set data type and location, second cube.
-        gl2.glColorPointer( 3, GL2.GL_FLOAT, 0, vertexColorBuffer );
-
-
-        gl2.glEnable(GL2.GL_POLYGON_OFFSET_FILL);
-        gl2. glPolygonOffset(1,1);
-        gl2.glDrawElements(GL2. GL_QUADS, 24, GL2.GL_UNSIGNED_INT, elementBuffer ); // Draw the second cube!
-        gl2.glDisable(GL2.GL_POLYGON_OFFSET_FILL);
-
-        gl2.glDisableClientState( GL2.GL_COLOR_ARRAY );  // Don't use color array for the edges.
-        gl2.glColor3f(0,0,0);  // The edges will be black.
-        gl2.glLineWidth(2);
-
-        gl2.glDrawElements( GL2.GL_LINES, 24, GL2.GL_UNSIGNED_INT, edgeElementBuffer );  // Draw the edges!
+//        gl2.glLoadIdentity();             // Set up modelview transform, first cube.
+//
+//        gl2. glTranslated(2, 0, 0);      // Move cube to right half of window.
+//
+//        gl2.glRotated(rotateZ,0,0,1);     // Apply rotations.
+//        gl2.glRotated(rotateY,0,1,0);
+//        gl2.glRotated(rotateX,1,0,0);
+//
+//        gl2.glVertexPointer( 3, GL2.GL_FLOAT, 0, vertexCoordBuffer );  // Set data type and location, second cube.
+//        gl2.glColorPointer( 3, GL2.GL_FLOAT, 0, vertexColorBuffer );
+//
+//
+//        gl2.glEnable(GL2.GL_POLYGON_OFFSET_FILL);
+//        gl2. glPolygonOffset(1,1);
+//        gl2.glDrawElements(GL2. GL_QUADS, 24, GL2.GL_UNSIGNED_INT, elementBuffer ); // Draw the second cube!
+//        gl2.glDisable(GL2.GL_POLYGON_OFFSET_FILL);
+//
+//        gl2.glDisableClientState( GL2.GL_COLOR_ARRAY );  // Don't use color array for the edges.
+//        gl2.glColor3f(0,0,0);  // The edges will be black.
+//        gl2.glLineWidth(2);
+//
+//        gl2.glDrawElements( GL2.GL_LINES, 24, GL2.GL_UNSIGNED_INT, edgeElementBuffer );  // Draw the edges!
 
     } // end display()
 
