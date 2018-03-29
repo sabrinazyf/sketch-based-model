@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="FrameMain">
+  <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="12" column-count="10" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="130" y="20" width="1582" height="878"/>
+    </constraints>
+    <properties>
+      <font name="Consolas" size="22"/>
+      <foreground color="-16771007"/>
+    </properties>
+    <border type="none"/>
+    <children>
+      <grid id="2fffb" binding="glPanel" layout-manager="FlowLayout" hgap="0" vgap="0" flow-align="1">
+        <constraints>
+          <grid row="0" column="0" row-span="12" col-span="9" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+            <minimum-size width="1280" height="720"/>
+            <maximum-size width="1600" height="900"/>
+          </grid>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="86c02" class="javax.swing.JLabel" binding="modeLabel">
+            <constraints/>
+            <properties>
+              <alignmentX value="0.0"/>
+              <alignmentY value="0.0"/>
+              <font name="Copperplate Gothic Bold" size="30" style="0"/>
+              <foreground color="-10183748"/>
+              <horizontalAlignment value="0"/>
+              <horizontalTextPosition value="0"/>
+              <maximumSize width="-1" height="30"/>
+              <minimumSize width="-1" height="30"/>
+              <preferredSize width="500" height="30"/>
+              <text value="Draw Mode"/>
+              <verticalAlignment value="0"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <component id="e517c" class="javax.swing.JButton" binding="finishDrawButton">
+        <constraints>
+          <grid row="0" column="9" row-span="5" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+            <minimum-size width="250" height="120"/>
+            <preferred-size width="250" height="120"/>
+            <maximum-size width="250" height="120"/>
+          </grid>
+        </constraints>
+        <properties>
+          <borderPainted value="false"/>
+          <contentAreaFilled value="false"/>
+          <font name="Copperplate Gothic Bold" size="30" style="0"/>
+          <foreground color="-1"/>
+          <hideActionText value="true"/>
+          <horizontalTextPosition value="0"/>
+          <icon value="imageButtoo.png"/>
+          <margin top="1" left="1" bottom="1" right="1"/>
+          <text value="Finish Draw"/>
+        </properties>
+      </component>
+      <component id="797c3" class="javax.swing.JButton" binding="cutButton">
+        <constraints>
+          <grid row="5" column="9" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+            <minimum-size width="250" height="120"/>
+            <preferred-size width="250" height="120"/>
+            <maximum-size width="250" height="120"/>
+          </grid>
+        </constraints>
+        <properties>
+          <borderPainted value="false"/>
+          <contentAreaFilled value="false"/>
+          <font name="Copperplate Gothic Bold" size="30" style="0"/>
+          <foreground color="-1"/>
+          <hideActionText value="true"/>
+          <horizontalAlignment value="0"/>
+          <horizontalTextPosition value="0"/>
+          <icon value="imageButtoo.png"/>
+          <inheritsPopupMenu value="false"/>
+          <label value="Cut Mode"/>
+          <margin top="1" left="1" bottom="1" right="1"/>
+          <text value="Cut Mode"/>
+        </properties>
+        <clientProperties>
+          <html.disable class="java.lang.Boolean" value="false"/>
+        </clientProperties>
+      </component>
+      <component id="d3665" class="javax.swing.JButton" binding="clearButton">
+        <constraints>
+          <grid row="8" column="9" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+            <minimum-size width="250" height="120"/>
+            <preferred-size width="250" height="120"/>
+            <maximum-size width="250" height="120"/>
+          </grid>
+        </constraints>
+        <properties>
+          <borderPainted value="false"/>
+          <contentAreaFilled value="false"/>
+          <font name="Copperplate Gothic Bold" size="30" style="0"/>
+          <foreground color="-1"/>
+          <hideActionText value="true"/>
+          <horizontalTextPosition value="0"/>
+          <icon value="imageButtoo.png"/>
+          <margin top="1" left="1" bottom="1" right="1"/>
+          <text value="Clear"/>
+        </properties>
+        <clientProperties>
+          <html.disable class="java.lang.Boolean" value="false"/>
+        </clientProperties>
+      </component>
+      <component id="41e90" class="javax.swing.JButton" binding="nextButton">
+        <constraints>
+          <grid row="7" column="9" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+            <minimum-size width="250" height="120"/>
+            <preferred-size width="250" height="120"/>
+            <maximum-size width="250" height="120"/>
+          </grid>
+        </constraints>
+        <properties>
+          <borderPainted value="false"/>
+          <contentAreaFilled value="false"/>
+          <font name="Copperplate Gothic Bold" size="30" style="0"/>
+          <foreground color="-1"/>
+          <hideActionText value="true"/>
+          <horizontalTextPosition value="0"/>
+          <icon value="imageButtoo.png"/>
+          <margin top="1" left="1" bottom="1" right="1"/>
+          <text value="Show Details"/>
+        </properties>
+      </component>
+      <grid id="8524c" layout-manager="GridLayoutManager" row-count="2" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="6" column="9" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="true"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="27f85" class="javax.swing.JButton" binding="downButton">
+            <constraints>
+              <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+                <minimum-size width="80" height="80"/>
+                <preferred-size width="80" height="80"/>
+                <maximum-size width="80" height="80"/>
+              </grid>
+            </constraints>
+            <properties>
+              <alignmentX value="0.5"/>
+              <autoscrolls value="false"/>
+              <borderPainted value="false"/>
+              <defaultCapable value="true"/>
+              <font name="Copperplate Gothic Bold" size="20" style="0"/>
+              <foreground color="-1"/>
+              <horizontalTextPosition value="0"/>
+              <icon value="rotateButton.png"/>
+              <iconTextGap value="0"/>
+              <inheritsPopupMenu value="false"/>
+              <margin top="1" left="1" bottom="1" right="1"/>
+              <opaque value="true"/>
+              <requestFocusEnabled value="true"/>
+              <text value="Down"/>
+              <verifyInputWhenFocusTarget value="true"/>
+            </properties>
+          </component>
+          <component id="36a09" class="javax.swing.JButton" binding="leftButton">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+                <minimum-size width="80" height="80"/>
+                <preferred-size width="80" height="80"/>
+                <maximum-size width="80" height="80"/>
+              </grid>
+            </constraints>
+            <properties>
+              <alignmentX value="0.5"/>
+              <autoscrolls value="false"/>
+              <borderPainted value="false"/>
+              <defaultCapable value="true"/>
+              <font name="Copperplate Gothic Bold" size="20" style="0"/>
+              <foreground color="-1"/>
+              <horizontalTextPosition value="0"/>
+              <icon value="rotateButton.png"/>
+              <iconTextGap value="0"/>
+              <inheritsPopupMenu value="false"/>
+              <margin top="1" left="1" bottom="1" right="1"/>
+              <opaque value="true"/>
+              <requestFocusEnabled value="true"/>
+              <text value="Left"/>
+              <verifyInputWhenFocusTarget value="true"/>
+            </properties>
+          </component>
+          <component id="dd3f1" class="javax.swing.JButton" binding="rightButton">
+            <constraints>
+              <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+                <minimum-size width="80" height="80"/>
+                <preferred-size width="80" height="80"/>
+                <maximum-size width="80" height="80"/>
+              </grid>
+            </constraints>
+            <properties>
+              <alignmentX value="0.5"/>
+              <autoscrolls value="false"/>
+              <borderPainted value="false"/>
+              <defaultCapable value="true"/>
+              <font name="Copperplate Gothic Bold" size="20" style="0"/>
+              <foreground color="-1"/>
+              <horizontalTextPosition value="0"/>
+              <icon value="rotateButton.png"/>
+              <iconTextGap value="0"/>
+              <inheritsPopupMenu value="false"/>
+              <margin top="1" left="1" bottom="1" right="1"/>
+              <opaque value="true"/>
+              <requestFocusEnabled value="true"/>
+              <text value="Right"/>
+              <verifyInputWhenFocusTarget value="true"/>
+            </properties>
+          </component>
+          <component id="b411f" class="javax.swing.JButton" binding="upButton">
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+                <minimum-size width="80" height="80"/>
+                <preferred-size width="80" height="80"/>
+                <maximum-size width="80" height="80"/>
+              </grid>
+            </constraints>
+            <properties>
+              <alignmentX value="0.5"/>
+              <autoscrolls value="false"/>
+              <borderPainted value="false"/>
+              <defaultCapable value="true"/>
+              <font name="Copperplate Gothic Bold" size="20" style="0"/>
+              <foreground color="-1"/>
+              <horizontalTextPosition value="0"/>
+              <icon value="rotateButton.png"/>
+              <iconTextGap value="0"/>
+              <inheritsPopupMenu value="false"/>
+              <margin top="1" left="1" bottom="1" right="1"/>
+              <opaque value="true"/>
+              <requestFocusEnabled value="true"/>
+              <text value="Up"/>
+              <verifyInputWhenFocusTarget value="true"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <component id="75dcd" class="javax.swing.JButton" binding="saveButton">
+        <constraints>
+          <grid row="9" column="9" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+            <minimum-size width="250" height="120"/>
+            <preferred-size width="250" height="120"/>
+            <maximum-size width="250" height="120"/>
+          </grid>
+        </constraints>
+        <properties>
+          <borderPainted value="false"/>
+          <contentAreaFilled value="true"/>
+          <focusPainted value="false"/>
+          <focusable value="true"/>
+          <font name="Copperplate Gothic Bold" size="30" style="0"/>
+          <foreground color="-1"/>
+          <hideActionText value="true"/>
+          <horizontalTextPosition value="0"/>
+          <icon value="imageButtoo.png"/>
+          <inheritsPopupMenu value="false"/>
+          <label value="Save Model"/>
+          <margin top="1" left="1" bottom="1" right="1"/>
+          <opaque value="true"/>
+          <text value="Save Model"/>
+        </properties>
+      </component>
+    </children>
+  </grid>
+</form>
