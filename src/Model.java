@@ -8,12 +8,23 @@ public class Model {
     private LinkedList<Axis> modelAxis = new LinkedList<>();
     private LinkedList<Axis> edgePointMap = new LinkedList<>();
     private LinkedList<Point> vertexPoint = new LinkedList<>();
+    //所有点的VBO集
     private float[] vertexCoords = {};
+    //依照点的坐标的法向量的VBO集
+    private float[] normalIndexCoords = {};
+    //依照点的坐标的法向量的VBO集
+    private float[] normalCoords = {};
+    //依照点的坐标的三角形VBO集
     private float[] triCoords = {};
+    //依照点的索引的三角形VBO集
     private int[] elementArray = {};
 
     public float[] getTriCoords() {
         return triCoords;
+    }
+
+    public float[] getNormalCoords() {
+        return normalCoords;
     }
 
     public float[] getVertexCoords() {
@@ -158,7 +169,13 @@ public class Model {
         edgePointMap = new LinkedList<>();
         modelLine = new LinkedList<>();
         modelTriangleLink = new LinkedList<>();
+        vertexPoint = new LinkedList<>();
+
+        vertexCoords = new float[0];
+        elementArray = new int[0];
         triCoords = new float[0];
+        normalCoords = new float[0];
+        normalIndexCoords = new float[0];
     }
 
     //构造椭圆的边
@@ -189,16 +206,16 @@ public class Model {
             isAdd = isAddTriangle(0, new Triangle(beginList.get(i), endList.get(i), endList.get(i + 1)));
             if (isAdd) {
                 modelTriangle.add(new Triangle(beginList.get(i).mirrorPoint(), endList.get(i).mirrorPoint(), endList.get(i + 1).mirrorPoint()));
-//                buildVAO(beginList.get(i), endList.get(i), endList.get(i + 1));
-//                addTri(beginList.get(i), endList.get(i), endList.get(i + 1));
-//                addTri(beginList.get(i).mirrorPoint(), endList.get(i).mirrorPoint(), endList.get(i + 1).mirrorPoint());
+                buildVAO(beginList.get(i), endList.get(i), endList.get(i + 1));
+                addTri(beginList.get(i), endList.get(i), endList.get(i + 1));
+                addTri(beginList.get(i).mirrorPoint(), endList.get(i).mirrorPoint(), endList.get(i + 1).mirrorPoint());
             }
             isAdd = isAddTriangle(0, new Triangle(beginList.get(i + 1), endList.get(i + 1), beginList.get(i)));
             if (isAdd) {
                 modelTriangle.add(new Triangle(beginList.get(i + 1).mirrorPoint(), endList.get(i + 1).mirrorPoint(), beginList.get(i).mirrorPoint()));
-//                buildVAO(beginList.get(i + 1), endList.get(i + 1), beginList.get(i));
-//                addTri(beginList.get(i + 1), endList.get(i + 1), beginList.get(i));
-//                addTri(beginList.get(i + 1).mirrorPoint(), endList.get(i + 1).mirrorPoint(), beginList.get(i).mirrorPoint());
+                buildVAO(beginList.get(i + 1), endList.get(i + 1), beginList.get(i));
+                addTri(beginList.get(i + 1), endList.get(i + 1), beginList.get(i));
+                addTri(beginList.get(i + 1).mirrorPoint(), endList.get(i + 1).mirrorPoint(), beginList.get(i).mirrorPoint());
             }
         }
     }
@@ -210,25 +227,25 @@ public class Model {
         isAdd = isAddTriangle(0, new Triangle(edgePointMap.get(edgePointIndex).getBasedPoint(), beginList.getLast(), endList.getLast()));
         if (isAdd) {
             modelTriangle.add(new Triangle(edgePointMap.get(edgePointIndex).getBasedPoint().mirrorPoint(), beginList.getLast().mirrorPoint(), endList.getLast().mirrorPoint()));
-//            buildVAO(edgePointMap.get(edgePointIndex).getBasedPoint(), beginList.getLast(), endList.getLast());
-//            addTri(edgePointMap.get(edgePointIndex).getBasedPoint(), beginList.getLast(), endList.getLast());
-//            addTri(edgePointMap.get(edgePointIndex).getBasedPoint().mirrorPoint(), beginList.getLast().mirrorPoint(), endList.getLast().mirrorPoint());
+            buildVAO(edgePointMap.get(edgePointIndex).getBasedPoint(), beginList.getLast(), endList.getLast());
+            addTri(edgePointMap.get(edgePointIndex).getBasedPoint(), beginList.getLast(), endList.getLast());
+            addTri(edgePointMap.get(edgePointIndex).getBasedPoint().mirrorPoint(), beginList.getLast().mirrorPoint(), endList.getLast().mirrorPoint());
         }
         addInsideTriangle(beginList, endList);
 
         isAdd = isAddTriangle(0, new Triangle(beginList.get(0), endList.get(0), modelAxis.get(axisIndexEnd).getLiftPoint()));
         if (isAdd) {
             modelTriangle.add(0, new Triangle(beginList.get(0).mirrorPoint(), endList.get(0).mirrorPoint(), modelAxis.get(axisIndexEnd).getLiftPoint().mirrorPoint()));
-//            buildVAO(beginList.get(0), endList.get(0), modelAxis.get(axisIndexEnd).getLiftPoint());
-//            addTri(beginList.get(0), endList.get(0), modelAxis.get(axisIndexEnd).getLiftPoint());
-//            addTri(beginList.get(0).mirrorPoint(), endList.get(0).mirrorPoint(), modelAxis.get(axisIndexEnd).getLiftPoint().mirrorPoint());
+            buildVAO(beginList.get(0), endList.get(0), modelAxis.get(axisIndexEnd).getLiftPoint());
+            addTri(beginList.get(0), endList.get(0), modelAxis.get(axisIndexEnd).getLiftPoint());
+            addTri(beginList.get(0).mirrorPoint(), endList.get(0).mirrorPoint(), modelAxis.get(axisIndexEnd).getLiftPoint().mirrorPoint());
         }
         isAdd = isAddTriangle(0, new Triangle(beginList.get(0), modelAxis.get(axisIndexEnd).getLiftPoint(), modelAxis.get(axisIndexBegin).getLiftPoint()));
         if (isAdd) {
             modelTriangle.add(new Triangle(beginList.get(0).mirrorPoint(), modelAxis.get(axisIndexEnd).getLiftPoint().mirrorPoint(), modelAxis.get(axisIndexBegin).getLiftPoint().mirrorPoint()));
-//            buildVAO(beginList.get(0), modelAxis.get(axisIndexEnd).getLiftPoint(), modelAxis.get(axisIndexBegin).getLiftPoint());
-//            addTri(beginList.get(0), modelAxis.get(axisIndexEnd).getLiftPoint(), modelAxis.get(axisIndexBegin).getLiftPoint());
-//            addTri(beginList.get(0).mirrorPoint(), modelAxis.get(axisIndexEnd).getLiftPoint().mirrorPoint(), modelAxis.get(axisIndexBegin).getLiftPoint().mirrorPoint());
+            buildVAO(beginList.get(0), modelAxis.get(axisIndexEnd).getLiftPoint(), modelAxis.get(axisIndexBegin).getLiftPoint());
+            addTri(beginList.get(0), modelAxis.get(axisIndexEnd).getLiftPoint(), modelAxis.get(axisIndexBegin).getLiftPoint());
+            addTri(beginList.get(0).mirrorPoint(), modelAxis.get(axisIndexEnd).getLiftPoint().mirrorPoint(), modelAxis.get(axisIndexBegin).getLiftPoint().mirrorPoint());
         }
     }
 
@@ -239,25 +256,25 @@ public class Model {
         isAdd = isAddTriangle(1, new Triangle(modelAxis.get(axisPointIndex).getLiftPoint(), beginList.getFirst(), endList.getFirst()));
         if (isAdd) {
             modelTriangleLink.add(new Triangle(modelAxis.get(axisPointIndex).getLiftPoint().mirrorPoint(), beginList.getFirst().mirrorPoint(), endList.getFirst().mirrorPoint()));
-//            buildVAO(modelAxis.get(axisPointIndex).getLiftPoint(), beginList.getFirst(), endList.getFirst());
-//            addTri(modelAxis.get(axisPointIndex).getLiftPoint(), beginList.getFirst(), endList.getFirst());
-//            addTri(modelAxis.get(axisPointIndex).getLiftPoint().mirrorPoint(), beginList.getFirst().mirrorPoint(), endList.getFirst().mirrorPoint());
+            buildVAO(modelAxis.get(axisPointIndex).getLiftPoint(), beginList.getFirst(), endList.getFirst());
+            addTri(modelAxis.get(axisPointIndex).getLiftPoint(), beginList.getFirst(), endList.getFirst());
+            addTri(modelAxis.get(axisPointIndex).getLiftPoint().mirrorPoint(), beginList.getFirst().mirrorPoint(), endList.getFirst().mirrorPoint());
         }
         addInsideTriangle(endList, beginList);
 
         isAdd = isAddTriangle(1, new Triangle(beginList.getLast(), endList.getLast(), edgePointMap.get(edgeIndexEnd).getBasedPoint()));
         if (isAdd) {
             modelTriangleLink.add(new Triangle(beginList.getLast().mirrorPoint(), endList.getLast().mirrorPoint(), edgePointMap.get(edgeIndexEnd).getBasedPoint().mirrorPoint()));
-//            buildVAO(beginList.getLast(), endList.getLast(), edgePointMap.get(edgeIndexEnd).getBasedPoint());
-//            addTri(beginList.getLast(), endList.getLast(), edgePointMap.get(edgeIndexEnd).getBasedPoint());
-//            addTri(beginList.getLast().mirrorPoint(), endList.getLast().mirrorPoint(), edgePointMap.get(edgeIndexEnd).getBasedPoint().mirrorPoint());
+            buildVAO(beginList.getLast(), endList.getLast(), edgePointMap.get(edgeIndexEnd).getBasedPoint());
+            addTri(beginList.getLast(), endList.getLast(), edgePointMap.get(edgeIndexEnd).getBasedPoint());
+            addTri(beginList.getLast().mirrorPoint(), endList.getLast().mirrorPoint(), edgePointMap.get(edgeIndexEnd).getBasedPoint().mirrorPoint());
         }
         isAdd = isAddTriangle(1, new Triangle(beginList.getLast(), edgePointMap.get(edgeIndexEnd).getBasedPoint(), edgePointMap.get(edgeIndexBegin).getBasedPoint()));
         if (isAdd) {
             modelTriangleLink.add(new Triangle(beginList.getLast().mirrorPoint(), edgePointMap.get(edgeIndexEnd).getBasedPoint().mirrorPoint(), edgePointMap.get(edgeIndexBegin).getBasedPoint().mirrorPoint()));
-//            buildVAO(beginList.getLast(), edgePointMap.get(edgeIndexEnd).getBasedPoint(), edgePointMap.get(edgeIndexBegin).getBasedPoint());
-//            addTri(beginList.getLast(), edgePointMap.get(edgeIndexEnd).getBasedPoint(), edgePointMap.get(edgeIndexBegin).getBasedPoint());
-//            addTri(beginList.getLast().mirrorPoint(), edgePointMap.get(edgeIndexEnd).getBasedPoint().mirrorPoint(), edgePointMap.get(edgeIndexBegin).getBasedPoint().mirrorPoint());
+            buildVAO(beginList.getLast(), edgePointMap.get(edgeIndexEnd).getBasedPoint(), edgePointMap.get(edgeIndexBegin).getBasedPoint());
+            addTri(beginList.getLast(), edgePointMap.get(edgeIndexEnd).getBasedPoint(), edgePointMap.get(edgeIndexBegin).getBasedPoint());
+            addTri(beginList.getLast().mirrorPoint(), edgePointMap.get(edgeIndexEnd).getBasedPoint().mirrorPoint(), edgePointMap.get(edgeIndexBegin).getBasedPoint().mirrorPoint());
         }
     }
 
@@ -327,8 +344,117 @@ public class Model {
         newCoords[index + 7] = (float) p2.getY();
         newCoords[index + 8] = (float) p2.getZ();
         triCoords = newCoords;
+
+        Point normal = new Triangle(p0, p1, p2).countNormal();
+        float newNormal[] = new float[index + 9];
+        System.arraycopy(normalCoords, 0, newNormal, 0, index);
+
+
+        newNormal[index] = (float) normal.getX();
+        newNormal[index + 1] = (float) normal.getY();
+        newNormal[index + 2] = (float) normal.getZ();
+        newNormal[index + 3] = (float) normal.getX();
+        newNormal[index + 4] = (float) normal.getY();
+        newNormal[index + 5] = (float) normal.getZ();
+        newNormal[index + 6] = (float) normal.getX();
+        newNormal[index + 7] = (float) normal.getY();
+        newNormal[index + 8] = (float) normal.getZ();
+        normalCoords = newNormal;
+
     }
 
+    //计算normal
+    private void buildNormal() {
+        normalCoords = new float[triCoords.length];
+        for (int i = 0; i < triCoords.length / 9; i++) {
+//            Point p = new Point(triCoords[i], triCoords[i + 1], triCoords[i + 2]);
+            int index = elementArray[i];
+//            if (index < 0) {
+//                System.out.println("index -1");
+//            }
+            Point normal = new Point(normalIndexCoords[index], normalIndexCoords[index + 1], normalIndexCoords[index + 2]).normalize();
+            normalCoords[i] = (float) normal.getX();
+            normalCoords[i + 1] = (float) normal.getY();
+            normalCoords[i + 2] = (float) normal.getZ();
+
+            index = elementArray[i + 3];
+            normal = new Point(normalIndexCoords[index], normalIndexCoords[index + 1], normalIndexCoords[index + 2]).normalize();
+            normalCoords[i + 3] = (float) normal.getX();
+            normalCoords[i + 4] = (float) normal.getY();
+            normalCoords[i + 5] = (float) normal.getZ();
+
+            index = elementArray[i + 6];
+            normal = new Point(normalIndexCoords[index], normalIndexCoords[index + 1], normalIndexCoords[index + 2]).normalize();
+            normalCoords[i + 6] = (float) normal.getX();
+            normalCoords[i + 7] = (float) normal.getY();
+            normalCoords[i + 8] = (float) normal.getZ();
+        }
+    }
+
+    //
+    private void updateNormal() {
+        int judgeCount = 0;
+        for (int i = 0; i < vertexPoint.size(); i++) {
+            float x = 0f;
+            float y = 0f;
+            float z = 0f;
+//            float x0 = 0f;
+//            float y0 = 0f;
+//            float z0 = 0f;
+            int count = 0;
+            for (int j = 0; j < elementArray.length; j += 3) {
+                if (elementArray[j] == i || elementArray[j + 1] == i || elementArray[j + 2] == i) {
+//                    Point normalP = new Triangle();
+//                    int indexJ = j;
+//                    if (elementArray[j + 1] == i) {
+//                        indexJ++;
+//                    }
+//                    if (elementArray[j + 2] == i) {
+//                        indexJ += 2;
+//                    }
+                    x += normalCoords[j * 3];
+                    y += normalCoords[j * 3 + 1];
+                    z += normalCoords[j * 3 + 2];
+//                    x += (float) normalP.getX();
+//                    y += (float) normalP.getY();
+//                    z += (float) normalP.getZ();
+                    count++;
+                }
+//1 2 3 4 5 6 7 8 9
+//1     2     3
+
+
+            }
+//            System.out.println("x,y,z:" + x + "," + y + ',' + z);
+//            System.out.println("x0,y0,z0:" + x0 + "," + y0+ ',' + z0);
+            System.out.println("Count: " + count);
+            if (count != 0) {
+                Point normalP = new Point(x / count, y / count, z / count).normalize();
+//            Point normalP = new Point(x / count, y / count, z / count);
+
+                for (int j = 0; j < elementArray.length; j += 3) {
+                    if (elementArray[j] == i || elementArray[j + 1] == i || elementArray[j + 2] == i) {
+//                    System.out.println("Old Normal:" + normalCoords[j] + "," + normalCoords[j + 1] + ',' + normalCoords[j + 2]);
+                        int indexJ = 0;
+                        if (elementArray[j + 1] == i) {
+                            indexJ += 3;
+                        }
+                        if (elementArray[j + 2] == i) {
+                            indexJ += 6;
+                        }
+                        normalCoords[3 * j + indexJ] = (float) normalP.getX();
+                        normalCoords[3 * j + indexJ + 1] = (float) normalP.getY();
+                        normalCoords[3 * j + indexJ + 2] = (float) normalP.getZ();
+//                    System.out.println("New Normal:" + normalCoords[j] + "," + normalCoords[j + 1] + ',' + normalCoords[j + 2]);
+                        judgeCount++;
+                    }
+                }
+            }
+        }
+        System.out.println("JudgeCount: " + judgeCount);
+
+
+    }
 
     private int findIndex(Point p) {
         int index = -1;
@@ -360,6 +486,13 @@ public class Model {
             newVertexCoords[index + 1] = (float) p.getY();
             newVertexCoords[index + 2] = (float) p.getZ();
             vertexCoords = newVertexCoords;
+
+            float newNormalCoords[] = new float[index + 3];
+            System.arraycopy(normalIndexCoords, 0, newNormalCoords, 0, index);
+            newVertexCoords[index] = 0;
+            newVertexCoords[index + 1] = 0;
+            newVertexCoords[index + 2] = 0;
+            normalIndexCoords = newNormalCoords;
             if (Math.abs(p.getZ()) >= 0.00000001) {
                 vertexPoint.add(p.mirrorPoint());
                 index = vertexCoords.length;
@@ -369,11 +502,17 @@ public class Model {
                 newVertexCoords[index + 1] = (float) p.mirrorPoint().getY();
                 newVertexCoords[index + 2] = (float) p.mirrorPoint().getZ();
                 vertexCoords = newVertexCoords;
+
+                newNormalCoords = new float[index + 3];
+                System.arraycopy(normalIndexCoords, 0, newNormalCoords, 0, index);
+                newVertexCoords[index] = 0;
+                newVertexCoords[index + 1] = 0;
+                newVertexCoords[index + 2] = 0;
+                normalIndexCoords = newNormalCoords;
             }
         }
 
     }
-
 
     private void buildVAO(Point p0, Point p1, Point p2) {
         addPoint(p0);
@@ -433,12 +572,9 @@ public class Model {
             }
         }
         System.out.println("Building Step 2");
-        for (Triangle T : modelTriangle) {
-            addTri(T.getA(),T.getB(),T.getC());
-        }
-        for (Triangle T : modelTriangleLink) {
-            addTri(T.getA(),T.getB(),T.getC());
-        }
+//        buildNormal();
+
+        updateNormal();
         System.out.println("Building Step 3");
     }
 }

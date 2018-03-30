@@ -63,7 +63,7 @@ public class FrameMain {
                     finishDrawButton.setText("Draw Mode");
                     modeLabel.setText("Display Mode");
                     if (canvas.getRenderMode() >= 0) {
-                        canvas.setRenderMode(6);
+                        canvas.setRenderMode(7);
                     }
                 } else {
                     canvas.clearAll();
@@ -83,7 +83,7 @@ public class FrameMain {
                 } else if (canvas.getRenderMode() == -2) {
                     cutButton.setText("Cut Mode");
                     modeLabel.setText("Display Mode");
-                    canvas.setRenderMode(6);
+                    canvas.setRenderMode(7);
                 }
             }
         });

@@ -3,6 +3,47 @@ public class Triangle {
     private Point b;
     private Point c;
 
+    private int indexA;
+    private int indexB;
+    private int indexC;
+
+    public void setIndex(int a, int b, int c){
+        indexA = a;
+        indexB = b;
+        indexC = c;
+    }
+
+    public Point countNormal(){
+        Point AB = new Point(a.getX() - b.getX(), a.getY() - b.getY(), a.getZ() - b.getZ());
+        Point AC = new Point(a.getX() - c.getX(), a.getY() - c.getY(), a.getZ() - c.getZ());
+        Point normal = AB.crossProduct(AC);
+        if (a.getZ() < 0 || b.getZ() < 0 || c.getZ() < 0) {
+            if (normal.getZ() > 0) {
+                AB = new Point(b.getX() - a.getX(), b.getY() - a.getY(), b.getZ() - a.getZ());
+                normal = AB.crossProduct(AC);
+            }
+        } else {
+            if (normal.getZ() < 0) {
+                AB = new Point(b.getX() - a.getX(), b.getY() - a.getY(), b.getZ() - a.getZ());
+                normal = AB.crossProduct(AC);
+            }
+        }
+        normal = normal.normalize();
+        return normal;
+    }
+
+    public int getIndexA() {
+        return indexA;
+    }
+
+    public int getIndexB() {
+        return indexB;
+    }
+
+    public int getIndexC() {
+        return indexC;
+    }
+
     public void setTriangleType(int triangleType) {
         this.triangleType = triangleType;
     }
@@ -136,6 +177,11 @@ public class Triangle {
             }
         }
         return isIntersect;
+    }
+
+    //判断三角形是否有这个点
+    public boolean includePoint(Point p){
+        return this.a.equal(p)||this.b.equal(p)||this.c.equal(p);
     }
 }
 

@@ -3,6 +3,10 @@ public class Point {
     private double y;
     private double z;
 
+    private double normalX = 0.0;
+    private double normalY = 0.0;
+    private double normalZ = 0.0;
+
     public void setX(double x) {
         this.x = x;
     }
@@ -15,6 +19,15 @@ public class Point {
         this.z = z;
     }
 
+    public void setNormal(double x, double y, double z) {
+        normalX = x;
+        normalY = y;
+        normalZ = z;
+    }
+
+    public Point getNormal() {
+        return new Point(normalX, normalY, normalZ);
+    }
 
     Point(double x, double y, double z) {
         this.x = x;
@@ -55,6 +68,12 @@ public class Point {
         return new Point(x, y, z);
     }
 
+    //将向量单位化
+    public Point normalize() {
+        double n = this.norm();
+        return new Point(this.x / n, this.y / n, this.z / n);
+    }
+
     //计算向量模长
     private double norm() {
         return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
@@ -72,7 +91,7 @@ public class Point {
     }
 
     //Z轴对称点
-    public Point mirrorPoint(){
-        return new Point(this.x,this.y,-1.0*this.z);
+    public Point mirrorPoint() {
+        return new Point(this.x, this.y, -1.0 * this.z);
     }
 }
