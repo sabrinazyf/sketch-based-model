@@ -240,7 +240,7 @@ public class Polygon {
     }
 
     //判断点是否在多边形内部，true为在内部，false为在外部
-    private boolean inPolygon(Point p) {
+    public boolean inPolygon(Point p) {
         if (this.onSegment(p)) {
             return true;
         } else {
@@ -264,7 +264,6 @@ public class Polygon {
 //            System.out.println("Point:(" + p.getX() + ", " + p.getY() + ", " + p.getZ() + "), Right: " + rightSum + ", Left: " + leftSum);
             return rightSum % 2 != 0 && leftSum % 2 != 0;
         }
-
     }
 
     private boolean inPolygonLine(Line l) {

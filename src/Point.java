@@ -94,4 +94,9 @@ public class Point {
     public Point mirrorPoint() {
         return new Point(this.x, this.y, -1.0 * this.z);
     }
+
+    //计算两向量夹角
+    public double angle(Point a) {
+        return Math.acos(this.dotProduct(a) / Math.sqrt(this.norm() * a.norm()));
+    }
 }

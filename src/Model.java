@@ -3,6 +3,8 @@ import java.util.Arrays;
 
 public class Model {
     private Polygon basedPolygon;
+    private Polygon leftPolygon;
+    private Polygon rightPolygon;
     private LinkedList<Triangle> modelTriangle = new LinkedList<>();
     private LinkedList<Triangle> modelTriangleLink = new LinkedList<>();
     private LinkedList<Axis> modelAxis = new LinkedList<>();
@@ -18,6 +20,55 @@ public class Model {
     private float[] triCoords = {};
     //依照点的索引的三角形VBO集
     private int[] elementArray = {};
+
+    //依照点的坐标的剖分后的左右三角形VBO集
+    private float[] leftTriCoords = {};
+    private float[] rightTriCoords = {};
+
+    //依照点的坐标的剖分后的左右三角形法向量VBO集
+    private float[] leftTriNormal = {};
+    private float[] rightTriNormal = {};
+
+    private int[] pointLinkCoords = {};
+    private LinkedList<Integer> pointLinkIndex = new LinkedList<>();
+
+    //Getter and Setter
+
+    public float[] getLeftTriNormal() {
+        return leftTriNormal;
+    }
+
+    public float[] getRightTriNormal() {
+        return rightTriNormal;
+    }
+
+    public Polygon getLeftPolygon() {
+        return leftPolygon;
+    }
+
+    public Polygon getRightPolygon() {
+        return rightPolygon;
+    }
+
+    public LinkedList<Axis> getEdgePointMap() {
+        return edgePointMap;
+    }
+
+    public LinkedList<Point> getVertexPoint() {
+        return vertexPoint;
+    }
+
+    public float[] getNormalIndexCoords() {
+        return normalIndexCoords;
+    }
+
+    public float[] getLeftTriCoords() {
+        return leftTriCoords;
+    }
+
+    public float[] getRightTriCoords() {
+        return rightTriCoords;
+    }
 
     public float[] getTriCoords() {
         return triCoords;
@@ -41,7 +92,6 @@ public class Model {
         return modelLine;
     }
 
-    //Getter and Setter
     public Polygon getBasedPolygon() {
         return basedPolygon;
     }
@@ -85,6 +135,7 @@ public class Model {
         System.out.println("Build Polygon Axis Success");
     }
 
+    //计算抬升高度
     private void calHeight(Point p, int index) {
         Axis thisAxis = new Axis(p);
         int pointCount = 0;
@@ -112,11 +163,6 @@ public class Model {
             pointCount = 1;
         }
         height = height / pointCount * 1.0;
-//        System.out.println("Height = " + height);
-//        for (int i : thisAxis.getLinkedPointIndex()) {
-//            System.out.print(i + " ");
-//        }
-//        System.out.println();
         thisAxis.setAxisHeight(height);
         if (height >= biggestZ) {
             biggestZ = height;
@@ -159,6 +205,9 @@ public class Model {
         for (int i = 0; i < basedPolygon.getEndPoint().size(); i++) {
             calHeight(basedPolygon.getEndPoint().get(i), i);
         }
+//        for (int i = 0; i < 2; i++) {
+//            smoothHeight();
+//        }
         System.out.println("Lifting Success");
     }
 
@@ -176,6 +225,10 @@ public class Model {
         triCoords = new float[0];
         normalCoords = new float[0];
         normalIndexCoords = new float[0];
+        leftTriCoords = new float[0];
+        rightTriCoords = new float[0];
+        leftTriNormal = new float[0];
+        rightTriNormal = new float[0];
     }
 
     //构造椭圆的边
@@ -183,7 +236,7 @@ public class Model {
         LinkedList<Point> ellipsePoint = new LinkedList<>();
         Point moveWay = new Point(middlePoint.getX() - edgePoint.getX(), middlePoint.getY() - edgePoint.getY(), 0);
         double r = edgePoint.distance(middlePoint);
-        double liftAngle = Math.PI * 0.5 * 0.25;
+        double liftAngle = height * 0.25;
         for (int i = 3; i >= 1; i--) {
             ellipsePoint.add(countEllipsePoint(height, liftAngle * i, middlePoint, edgePoint));
         }
@@ -191,9 +244,11 @@ public class Model {
     }
 
     //给定一个角度来计算点的位置
-    private Point countEllipsePoint(double b, double liftAngle, Point middlePoint, Point edgePoint) {
+    private Point countEllipsePoint(double b, double liftHeight, Point middlePoint, Point edgePoint) {
+        double liftAngle = Math.atan(liftHeight / middlePoint.distance(edgePoint));
         double x, y, z, percent;
-        z = b * Math.abs(Math.sin(liftAngle));
+//        z = b * Math.abs(Math.sin(liftAngle));
+        z = liftHeight;
         percent = 1 - Math.abs(Math.cos(liftAngle));
         x = percent * middlePoint.getX() + (1 - percent) * edgePoint.getX();
         y = percent * middlePoint.getY() + (1 - percent) * edgePoint.getY();
@@ -363,44 +418,68 @@ public class Model {
 
     }
 
-    //计算normal
-    private void buildNormal() {
-        normalCoords = new float[triCoords.length];
-        for (int i = 0; i < triCoords.length / 9; i++) {
-//            Point p = new Point(triCoords[i], triCoords[i + 1], triCoords[i + 2]);
-            int index = elementArray[i];
-//            if (index < 0) {
-//                System.out.println("index -1");
-//            }
-            Point normal = new Point(normalIndexCoords[index], normalIndexCoords[index + 1], normalIndexCoords[index + 2]).normalize();
-            normalCoords[i] = (float) normal.getX();
-            normalCoords[i + 1] = (float) normal.getY();
-            normalCoords[i + 2] = (float) normal.getZ();
-
-            index = elementArray[i + 3];
-            normal = new Point(normalIndexCoords[index], normalIndexCoords[index + 1], normalIndexCoords[index + 2]).normalize();
-            normalCoords[i + 3] = (float) normal.getX();
-            normalCoords[i + 4] = (float) normal.getY();
-            normalCoords[i + 5] = (float) normal.getZ();
-
-            index = elementArray[i + 6];
-            normal = new Point(normalIndexCoords[index], normalIndexCoords[index + 1], normalIndexCoords[index + 2]).normalize();
-            normalCoords[i + 6] = (float) normal.getX();
-            normalCoords[i + 7] = (float) normal.getY();
-            normalCoords[i + 8] = (float) normal.getZ();
+    //更新基于element的triCoords
+    private void updateTri() {
+        triCoords = new float[elementArray.length * 3];
+        for (int i = 0; i < elementArray.length; i += 3) {
+            for (int j = 0; j < 3; j++) {
+                triCoords[i * 3 + j * 3] = (float) vertexPoint.get(elementArray[i + j]).getX();
+                triCoords[i * 3 + 1 + j * 3] = (float) vertexPoint.get(elementArray[i + j]).getY();
+                triCoords[i * 3 + 2 + j * 3] = (float) vertexPoint.get(elementArray[i + j]).getZ();
+            }
         }
     }
 
-    //
+    //计算基于triCoords的normal
+    private void buildNormal() {
+        normalCoords = new float[triCoords.length];
+        for (int index = 0; index < triCoords.length; index += 9) {
+            Point p0 = new Point(triCoords[index], triCoords[index + 1], triCoords[index + 2]);
+            Point p1 = new Point(triCoords[index + 3], triCoords[index + 4], triCoords[index + 5]);
+            Point p2 = new Point(triCoords[index + 6], triCoords[index + 7], triCoords[index + 8]);
+//            Point normal = new Triangle(p0, p1, p2).countNormal();
+            Point normal = new Triangle(p0, p2, p1).countNormal();
+            boolean normalZ = normal.getZ() > 0;
+            boolean normalTri = p0.getZ() + p1.getZ() + p2.getZ() > 0;
+//            boolean normalTri = normalCoords[index + 2] + normalCoords[index + 5] + normalCoords[index + 8] > 0;
+            int dx = 1, dy = 1, dz = 1;
+//            if (normalZ != normalTri) {
+//                normal = new Triangle(p0, p2, p1).countNormal();
+//                dz = -1;
+//            }
+//
+//            if (normal.getX() > 0 != (p0.getX() + p1.getX() + p2.getX()) > 0) {
+//                dx = -1;
+//            }
+//
+//            if (Math.toDegrees(normal.angle(new Point(1, 0, 0))) > 80 || Math.toDegrees(normal.angle(new Point(1, 0, 0))) < 0) {
+//                dx = -1;
+//            }
+//            if (Math.toDegrees(normal.angle(new Point(0, 1, 0))) > 80 || Math.toDegrees(normal.angle(new Point(0, 1, 0))) < 0) {
+//                dy = -1;
+//            }
+//            if (normal.getY() > 0 != (p0.getY() + p1.getY() + p2.getY()) > 0) {
+//                dy = -1;
+//            }
+            normalCoords[index] = (float) normal.getX() * dx;
+            normalCoords[index + 1] = (float) normal.getY() * dy;
+            normalCoords[index + 2] = (float) normal.getZ() * dz;
+            normalCoords[index + 3] = (float) normal.getX() * dx;
+            normalCoords[index + 4] = (float) normal.getY() * dy;
+            normalCoords[index + 5] = (float) normal.getZ() * dz;
+            normalCoords[index + 6] = (float) normal.getX() * dx;
+            normalCoords[index + 7] = (float) normal.getY() * dy;
+            normalCoords[index + 8] = (float) normal.getZ() * dz;
+        }
+    }
+
+    //更新normal
     private void updateNormal() {
-        int judgeCount = 0;
+//        int judgeCount = 0;
         for (int i = 0; i < vertexPoint.size(); i++) {
             float x = 0f;
             float y = 0f;
             float z = 0f;
-//            float x0 = 0f;
-//            float y0 = 0f;
-//            float z0 = 0f;
             int count = 0;
             for (int j = 0; j < elementArray.length; j += 3) {
                 if (elementArray[j] == i || elementArray[j + 1] == i || elementArray[j + 2] == i) {
@@ -422,16 +501,13 @@ public class Model {
                 }
 //1 2 3 4 5 6 7 8 9
 //1     2     3
-
-
             }
 //            System.out.println("x,y,z:" + x + "," + y + ',' + z);
 //            System.out.println("x0,y0,z0:" + x0 + "," + y0+ ',' + z0);
-            System.out.println("Count: " + count);
+//            System.out.println("Count: " + count);
             if (count != 0) {
                 Point normalP = new Point(x / count, y / count, z / count).normalize();
 //            Point normalP = new Point(x / count, y / count, z / count);
-
                 for (int j = 0; j < elementArray.length; j += 3) {
                     if (elementArray[j] == i || elementArray[j + 1] == i || elementArray[j + 2] == i) {
 //                    System.out.println("Old Normal:" + normalCoords[j] + "," + normalCoords[j + 1] + ',' + normalCoords[j + 2]);
@@ -446,14 +522,12 @@ public class Model {
                         normalCoords[3 * j + indexJ + 1] = (float) normalP.getY();
                         normalCoords[3 * j + indexJ + 2] = (float) normalP.getZ();
 //                    System.out.println("New Normal:" + normalCoords[j] + "," + normalCoords[j + 1] + ',' + normalCoords[j + 2]);
-                        judgeCount++;
+//                        judgeCount++;
                     }
                 }
             }
         }
-        System.out.println("JudgeCount: " + judgeCount);
-
-
+//        System.out.println("JudgeCount: " + judgeCount);
     }
 
     private int findIndex(Point p) {
@@ -530,6 +604,7 @@ public class Model {
         elementArray = newIndex;
     }
 
+    //根据绘制的线条建立模型
     public void buildSketchModel() {
         countBasedPolygon();
         System.out.println("Count OK");
@@ -572,9 +647,432 @@ public class Model {
             }
         }
         System.out.println("Building Step 2");
-//        buildNormal();
-
-        updateNormal();
+        buildNormal();
+//        updateNormal();
+        buildAxisIndex();
         System.out.println("Building Step 3");
+    }
+
+    //根据中线分割模型
+    public void divideModel(int startIndexX, int startIndexY, int endIndexX, int endIndexY, LinkedList<Point> cutLinePoint) {
+        if (startIndexX != endIndexX && endIndexY != startIndexY) {
+            //右边的框
+            rightPolygon = new Polygon();
+            rightPolygon.addPolygonPoint(cutLinePoint.getFirst());
+            int lastIndex = endIndexX;
+            int maxIndex = basedPolygon.getPolygonPoint().size();
+            if (lastIndex < startIndexY) {
+                lastIndex += maxIndex;
+            }
+            for (int i = startIndexY; i <= lastIndex; i++) {
+                rightPolygon.addPolygonPoint(basedPolygon.getPolygonPoint().get(i % maxIndex));
+            }
+            rightPolygon.addPolygonPoint(cutLinePoint.getLast());
+            for (int i = cutLinePoint.size() - 2; i >= 1; i--) {
+                rightPolygon.addPolygonPoint(cutLinePoint.get(i));
+            }
+            //左边的框
+            leftPolygon = new Polygon();
+            leftPolygon.addPolygonPoint(cutLinePoint.getLast());
+            lastIndex = startIndexX;
+            if (lastIndex < endIndexY) {
+                lastIndex += maxIndex;
+            }
+            for (int i = endIndexY; i <= lastIndex; i++) {
+                leftPolygon.addPolygonPoint(basedPolygon.getPolygonPoint().get(i % maxIndex));
+            }
+            leftPolygon.addPolygonPoint(cutLinePoint.getFirst());
+            for (int i = 1; i <= cutLinePoint.size() - 2; i++) {
+                leftPolygon.addPolygonPoint(cutLinePoint.get(i));
+            }
+        } else {
+            //外面的框
+            rightPolygon = new Polygon();
+            int maxIndex = basedPolygon.getPolygonPoint().size();
+            for (int i = 0; i < maxIndex; i++) {
+                rightPolygon.addPolygonPoint(basedPolygon.getPolygonPoint().get((startIndexY + i) % maxIndex));
+            }
+            if (cutLinePoint.getFirst().distance(basedPolygon.getPolygonPoint().get(startIndexX)) < cutLinePoint.getLast().distance(basedPolygon.getPolygonPoint().get(startIndexX))) {
+                for (int i = 0; i < cutLinePoint.size(); i++) {
+                    rightPolygon.addPolygonPoint(cutLinePoint.get(i));
+                }
+            } else {
+                for (int i = cutLinePoint.size() - 1; i >= 0; i--) {
+                    rightPolygon.addPolygonPoint(cutLinePoint.get(i));
+                }
+            }
+        }
+        rightPolygon.buildPolygonLine();
+        leftPolygon.buildPolygonLine();
+//
+        for (int i = 0; i < triCoords.length - 9; i += 9) {
+            divideTriangle(i);
+        }
+
+    }
+
+    //分割三角形
+    private void divideTriangle(int index) {
+        int leftCount = 0;
+        int leftIndexSet[] = {-1, -1, -1};
+        if (selectModel(new Point(triCoords[index], triCoords[index + 1], 0))) {
+            leftCount++;
+            leftIndexSet[0] = 1;
+        }
+        if (selectModel(new Point(triCoords[index + 3], triCoords[index + 4], 0))) {
+            leftCount++;
+            leftIndexSet[1] = 1;
+        }
+        if (selectModel(new Point(triCoords[index + 6], triCoords[index + 7], 0))) {
+            leftCount++;
+            leftIndexSet[2] = 1;
+        }
+        //加入右边的三角形阵列
+        if (leftCount == 0) {
+            addCutTri(1, index);
+        } else if (leftCount == 3) {
+            //加入左边的三角形阵列
+            addCutTri(0, index);
+        } else if (leftCount == 1) {
+
+        }
+    }
+
+    private void addCutTri(int mode, int index) {
+        float point[];
+        float normal[];
+        if (mode == 0) {
+            point = leftTriCoords;
+            normal = leftTriNormal;
+        } else {
+            point = rightTriCoords;
+            normal = rightTriNormal;
+        }
+        int lastIndex = normal.length;
+        float newNormal[] = new float[lastIndex + 9];
+        System.arraycopy(normal, 0, newNormal, 0, lastIndex);
+        System.arraycopy(normalCoords, index, newNormal, lastIndex, 9);
+//        for (int i = 0; i < 9; i++) {
+//            newNormal[lastIndex + i] = normalCoords[index + i];
+//        }
+
+        float newCoords[] = new float[lastIndex + 9];
+        System.arraycopy(point, 0, newCoords, 0, lastIndex);
+        System.arraycopy(triCoords, index, newCoords, lastIndex, 9);
+//        for (int i = 0; i < 9; i++) {
+//            newCoords[lastIndex + i] = rightTriCoords[index + i];
+//        }
+
+        if (mode == 0) {
+            leftTriNormal = newNormal;
+            leftTriCoords = newCoords;
+        } else {
+            rightTriNormal = newNormal;
+            rightTriCoords = newCoords;
+        }
+    }
+
+    private void smoothHeight() {
+        for (int i = 0; i < basedPolygon.getEndPoint().size(); i++) {
+            double sumHeight = 0;
+            int sumPoint = 0;
+            double thisHeight = modelAxis.get(i).getAxisHeight();
+            for (int j = 0; j < basedPolygon.getEndPoint().size(); j++) {
+                if (j != i) {
+                    if (isOnAxis(basedPolygon.getEndPoint().get(j), basedPolygon.getEndPoint().get(i))) {
+                        sumPoint++;
+                        sumHeight += modelAxis.get(j).getAxisHeight();
+                    }
+                }
+            }
+//            if (thisHeight <= sumHeight / sumPoint) {
+//                modelAxis.get(i).setAxisHeight(sumHeight / sumPoint);
+//            }
+            modelAxis.get(i).setAxisHeight(sumHeight / sumPoint);
+
+        }
+    }
+
+    //false:右边 true:左边
+    public boolean selectModel(Point p) {
+        return leftPolygon.inPolygon(p);
+    }
+
+    public void smooth(int type, int vertexSize) {
+        LinkedList<Point> newPointList = new LinkedList<>();
+        double lambda = 0.5;
+        if (type == 1) {
+            vertexSize = vertexPoint.size();
+        }
+        for (int i = 0; i < vertexSize; i++) {
+            int beginIndex = pointLinkIndex.get(i);
+            int endIndex = pointLinkCoords.length;
+            if (i != vertexSize - 1) {
+                endIndex = pointLinkIndex.get(i + 1);
+            }
+            double distance[] = new double[endIndex - beginIndex];
+            double sumDistance = 0.0;
+            double newX = 0.0;
+            double newY = 0.0;
+            double newZ = 0.0;
+
+            if (type == 0) {
+                for (int j = beginIndex; j < endIndex; j++) {
+                    double dis = vertexPoint.get(i).distance(vertexPoint.get(pointLinkCoords[j]));
+                    sumDistance += dis;
+                    distance[j - beginIndex] = dis;
+                }
+                for (int j = beginIndex; j < endIndex; j++) {
+//                newX += (distance[j - beginIndex] / sumDistance) * (vertexPoint.get(pointLinkCoords[j]).getX() - vertexPoint.get(i).getX());
+                    newX += (distance[j - beginIndex] / sumDistance) * vertexPoint.get(pointLinkCoords[j]).getX();
+//                newY += (distance[j - beginIndex] / sumDistance) * (vertexPoint.get(pointLinkCoords[j]).getY() - vertexPoint.get(i).getY());
+                    newY += (distance[j - beginIndex] / sumDistance) * vertexPoint.get(pointLinkCoords[j]).getY();
+//                newZ += (distance[j - beginIndex] / sumDistance) * (vertexPoint.get(pointLinkCoords[j]).getZ() - vertexPoint.get(i).getZ());
+                    newZ += (distance[j - beginIndex] / sumDistance) * vertexPoint.get(pointLinkCoords[j]).getZ();
+                }
+                newX = lambda * newX + (1 - lambda) * vertexPoint.get(i).getX();
+                newY = lambda * newY + (1 - lambda) * vertexPoint.get(i).getY();
+                newZ = lambda * newZ + (1 - lambda) * vertexPoint.get(i).getZ();
+            }
+            if (type == 1) {
+                int n = endIndex - beginIndex;
+                double beta = (1.0 / n) * (5 / 8.0 - (3 / 8.0 + (1 / 4.0) * Math.cos((2 * Math.PI) / n)) * (3 / 8.0 + (1 / 4.0) * Math.cos((2 * Math.PI) / n)));
+                for (int j = beginIndex; j < endIndex; j++) {
+                    newX += beta * vertexPoint.get(pointLinkCoords[j]).getX();
+                    newY += beta * vertexPoint.get(pointLinkCoords[j]).getY();
+                    newZ += beta * vertexPoint.get(pointLinkCoords[j]).getZ();
+                }
+                newX += (1 - n * beta) * vertexPoint.get(i).getX();
+                newY += (1 - n * beta) * vertexPoint.get(i).getY();
+                newZ += (1 - n * beta) * vertexPoint.get(i).getZ();
+            }
+            newPointList.add(new Point(newX, newY, newZ));
+        }
+        vertexPoint.clear();
+        vertexPoint = newPointList;
+        updateTri();
+        buildNormal();
+        updateNormal();
+    }
+
+    //建立边索引
+    private void buildAxisIndex() {
+        pointLinkCoords = new int[0];
+        for (int i = 0; i < vertexPoint.size(); i++) {
+            LinkedList<Integer> linkPoint = new LinkedList<>();
+            for (int index = 0; index < elementArray.length; index += 3) {
+                boolean isInside = false;
+                for (int j = 0; j < 3; j++) {
+                    if (elementArray[index + j] == i) {
+                        isInside = true;
+                        break;
+                    }
+                }
+                if (isInside) {
+                    for (int j = 0; j < 3; j++) {
+                        if (elementArray[index + j] != i) {
+                            boolean isIn = false;
+                            for (int num : linkPoint) {
+                                if (num == elementArray[index + j]) {
+                                    isIn = true;
+                                    break;
+                                }
+                            }
+                            if (!isIn) {
+                                linkPoint.add(elementArray[index + j]);
+                            }
+                        }
+                    }
+                }
+            }
+            if (linkPoint.size() == 0) {
+                System.out.println("wtf");
+            }
+            pointLinkIndex.add(i, pointLinkCoords.length);
+            int[] newLink = new int[pointLinkCoords.length + linkPoint.size()];
+            System.arraycopy(pointLinkCoords, 0, newLink, 0, pointLinkCoords.length);
+            for (int j = 0; j < linkPoint.size(); j++) {
+                newLink[pointLinkCoords.length + j] = linkPoint.get(j);
+            }
+            pointLinkCoords = newLink;
+        }
+    }
+
+    //曲面细分
+    public void loopSub() {
+        LinkedList<Point> innerPoint = new LinkedList<>();
+        LinkedList<Point> newPointList = vertexPoint;
+        int vertexSize = vertexPoint.size();
+        smooth(1, vertexSize);
+//        System.out.println("length: " + elementArray.length);
+        int elementLength = elementArray.length;
+        for (int i = 0; i < elementLength; i += 3) {
+            //增加内部顶点
+            int index01, index12, index02;
+
+            Point inn = calInnerPoint(elementArray[i], elementArray[i + 1]);
+            index01 = isInListPoint(innerPoint, inn);
+            if (index01 == -1) {
+                newPointList.add(inn);
+                innerPoint.add(inn);
+                index01 = vertexPoint.size() - 1;
+            } else {
+                index01 += vertexSize;
+            }
+            inn = calInnerPoint(elementArray[i], elementArray[i + 2]);
+            index02 = isInListPoint(innerPoint, inn);
+            if (index02 == -1) {
+                index02 = vertexPoint.size();
+                innerPoint.add(inn);
+                newPointList.add(inn);
+            } else {
+                index02 += vertexSize;
+            }
+            inn = calInnerPoint(elementArray[i + 2], elementArray[i + 1]);
+            index12 = isInListPoint(innerPoint, inn);
+            if (index12 == -1) {
+                innerPoint.add(inn);
+                index12 = newPointList.size();
+                newPointList.add(inn);
+            } else {
+                index12 += vertexSize;
+            }
+            //构建内部三角形
+//            System.out.println("Vertex Size:" + newPointList.size() + ", index01:" + index01 + ", index02:" + index02 + ", index12:" + index12);
+            addTriFromIndex(index01, index02, index12);
+            addTriFromIndex(i, index01, index02);
+            addTriFromIndex(i + 1, index01, index12);
+            addTriFromIndex(i + 2, index02, index12);
+            System.out.println("size = " + elementLength + ", i = " + i);
+            //移动顶点位置
+
+        }
+        vertexPoint.clear();
+        vertexPoint = newPointList;
+        updateTri();
+        buildAxisIndex();
+        buildNormal();
+        //            updateNormal();
+    }
+
+    private Point calInnerPoint(int leftIndex, int rightIndex) {
+        int upIndex = -1, downIndex = -1;
+        int count = 0;
+
+        for (int i = 0; i < elementArray.length; i += 3) {
+            if (((elementArray[i] == leftIndex && elementArray[i + 1] == rightIndex)) || ((elementArray[i + 1] == leftIndex && elementArray[i] == rightIndex))) {
+                if (count == 0) {
+                    upIndex = elementArray[i + 2];
+                    count++;
+                } else {
+                    downIndex = elementArray[i + 2];
+                    break;
+                }
+            }
+            if (((elementArray[i] == leftIndex && elementArray[i + 2] == rightIndex)) || ((elementArray[i + 2] == leftIndex && elementArray[i] == rightIndex))) {
+                if (count == 0) {
+                    upIndex = elementArray[i + 1];
+                    count++;
+                } else {
+                    downIndex = elementArray[i + 1];
+                    break;
+                }
+            }
+            if (((elementArray[i + 1] == leftIndex && elementArray[i + 2] == rightIndex)) || ((elementArray[i + 2] == leftIndex && elementArray[i + 1] == rightIndex))) {
+                if (count == 0) {
+                    upIndex = elementArray[i];
+                    count++;
+                } else {
+                    downIndex = elementArray[i];
+                    break;
+                }
+            }
+        }
+
+//        int leftBegin = pointLinkIndex.get(leftIndex);
+//        int rightBegin = pointLinkIndex.get(rightIndex);
+//        int leftEnd = pointLinkCoords.length;
+//        int rightEnd = pointLinkCoords.length;
+//
+//        if (rightIndex != vertexPoint.size() - 1) {
+//            rightEnd = pointLinkIndex.get(rightIndex + 1);
+//        }
+//        if (leftIndex != vertexPoint.size() - 1) {
+//            leftEnd = pointLinkIndex.get(leftIndex + 1);
+//        }
+//
+//        for (int i = leftBegin; i < leftEnd; i++) {
+//            for (int j = rightBegin; j < rightEnd; j++) {
+//                if (i == j) {
+//                    if (count == 0) {
+//                        count++;
+//                        upIndex = i;
+//                    } else if (count == 1) {
+//                        if (i != upIndex) {
+//                            count++;
+//                            downIndex = i;
+//                            break;
+//                        }
+//                    }
+//                }
+//            }
+//            if (count >= 2) {
+//                break;
+//            }
+//        }
+
+        if (upIndex == -1 || downIndex == -1) {
+            double x = 0.5 * (vertexPoint.get(leftIndex).getX() + vertexPoint.get(rightIndex).getX());
+            double y = 0.5 * (vertexPoint.get(leftIndex).getY() + vertexPoint.get(rightIndex).getY());
+            double z = 0.5 * (vertexPoint.get(leftIndex).getZ() + vertexPoint.get(rightIndex).getZ());
+            return new Point(x, y, z);
+        } else {
+            Point upPoint = vertexPoint.get(upIndex);
+            Point downPoint = vertexPoint.get(downIndex);
+            Point rightPoint = vertexPoint.get(rightIndex);
+            Point leftPoint = vertexPoint.get(leftIndex);
+            double x = (1 / 8.0) * (upPoint.getX() + downPoint.getX()) + (3 / 8.0) * (rightPoint.getX() + leftPoint.getX());
+            double y = (1 / 8.0) * (upPoint.getY() + downPoint.getY()) + (3 / 8.0) * (rightPoint.getY() + leftPoint.getY());
+            double z = (1 / 8.0) * (upPoint.getZ() + downPoint.getZ()) + (3 / 8.0) * (rightPoint.getZ() + leftPoint.getZ());
+            return new Point(x, y, z);
+        }
+    }
+
+    private int isInListPoint(LinkedList<Point> pointList, Point p) {
+        if (pointList.size() == 0) {
+            return -1;
+        }
+        int isIn = -1;
+        for (int i = 0; i < pointList.size(); i++) {
+            if (p.equal(pointList.get(i))) {
+                isIn = i;
+                break;
+            }
+        }
+        return isIn;
+    }
+
+    private void addTriFromIndex(int a, int b, int c) {
+        int newElementArray[] = new int[elementArray.length + 3];
+        System.arraycopy(elementArray, 0, newElementArray, 0, elementArray.length);
+        newElementArray[elementArray.length] = a;
+        newElementArray[elementArray.length + 1] = b;
+        newElementArray[elementArray.length + 2] = c;
+        elementArray = newElementArray;
+//        float newTriCoords[] = new float[triCoords.length + 9];
+//        int len = triCoords.length;
+//        System.arraycopy(triCoords, 0, newTriCoords, 0, triCoords.length);
+//        newTriCoords[len] = (float) vertexPoint.get(a).getX();
+//        newTriCoords[len + 1] = (float) vertexPoint.get(a).getY();
+//        newTriCoords[len + 2] = (float) vertexPoint.get(a).getZ();
+//
+//        newTriCoords[len + 3] = (float) vertexPoint.get(b).getX();
+//        newTriCoords[len + 4] = (float) vertexPoint.get(b).getY();
+//        newTriCoords[len + 5] = (float) vertexPoint.get(b).getZ();
+//
+//        newTriCoords[len + 6] = (float) vertexPoint.get(c).getX();
+//        newTriCoords[len + 7] = (float) vertexPoint.get(c).getY();
+//        newTriCoords[len + 8] = (float) vertexPoint.get(c).getZ();
+//        triCoords = newTriCoords;
     }
 }

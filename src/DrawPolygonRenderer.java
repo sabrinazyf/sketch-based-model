@@ -1,6 +1,10 @@
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
+
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
+
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.common.nio.Buffers;
@@ -12,7 +16,7 @@ import java.util.LinkedList;
 import static com.jogamp.opengl.GL2.*; // GL2 constants
 
 @SuppressWarnings("serial")
-public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, MouseListener, KeyListener, MouseMotionListener {
+public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, MouseListener, KeyListener, MouseMotionListener, MouseWheelListener {
     private static final int SHOW_OUTSIDELINE_MODE = 0;
     private static final int SHOW_CATLINE_MODE = 1;
     private static final int SHOW_FANLINE_MODE = 2;
@@ -23,12 +27,16 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
     private static final int SHOW_MODEL_MODE = 7;
     private static final int DRAW_MODE = -1;
     private static final int CUT_MODE = -2;
+    private static final int CUT_SELECT_MODE = -3;
     private float rotateX;
     private float rotateY;
 
     private GLU glu;
     //    private Polygon renderPolygon = new Polygon();
     private Model renderModel = new Model();
+    private Model lastModel = new Model();
+
+    private boolean canUndo = false;
 
     private int renderMode;
 
@@ -38,14 +46,17 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
     private GL2 gl;
     private LinkedList<Point> pointList;
 
+    //设定显示模式
     public void setRenderMode(int mode) {
         renderMode = mode;
     }
 
+    //获取显示模式
     public int getRenderMode() {
         return renderMode;
     }
 
+    //初始化函数
     public DrawPolygonRenderer() {
         renderMode = DRAW_MODE;
         this.addGLEventListener(this);
@@ -108,6 +119,14 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
 
     }
 
+    public void smoothModel() {
+        for (int i = 0; i < 3; i++) {
+            renderModel.smooth(1, 0);
+        }
+//        renderModel.loopSub();
+    }
+
+    //具体的选择模式
     private void selectMode(GL2 gl) {
         if (renderMode == SHOW_MODEL_MODE) {
             gl.glTranslatef(0.0f, 0.0f, -1.0f);
@@ -128,12 +147,12 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
         }
         // 绘制原多边形
         if (renderMode >= 0 && renderMode != SHOW_CATLINE_MODE && renderMode != SHOW_MODEL_MODE) {
-            drawOutLine(gl,renderPolygon);
+            drawOutLine(gl, renderPolygon);
         }
         select2DMode(gl, renderPolygon);
         select3DMode(gl, renderPolygon);
 
-        if (renderMode == SHOW_MODEL_MODE || renderMode == CUT_MODE) {
+        if (renderMode == SHOW_MODEL_MODE || renderMode == CUT_MODE || renderMode == CUT_SELECT_MODE) {
             gl.glEnable(GL_MULTISAMPLE);
             gl.glEnable(GL2.GL_LIGHTING);
             gl.glEnable(GL2.GL_LIGHT0);
@@ -147,33 +166,71 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
             float[] diffuseLight = {1f, 1f, 1f, 0f};
             gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_DIFFUSE, diffuseLight, 0);
 
+            float specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+            gl.glLightfv(GL_LIGHT0, GL_SPECULAR, specular, 0);
+
+            float specref[] = {1.0f, 1.0f, 1.0f, 1.0f};
+            // 设置多边形正面的镜面反射属性
+            gl.glMaterialfv(GL_FRONT, GL_SPECULAR, specref, 0);
+            // 指定镜面指数
+            gl.glMateriali(GL_FRONT, GL_SHININESS, 128);
+
             FloatBuffer triCoordBuffer = Buffers.newDirectFloatBuffer(renderModel.getTriCoords());
             FloatBuffer normalCoordBuffer = Buffers.newDirectFloatBuffer(renderModel.getNormalCoords());
+
+            if (renderMode == CUT_SELECT_MODE) {
+                triCoordBuffer = Buffers.newDirectFloatBuffer(renderModel.getRightTriCoords());
+                normalCoordBuffer = Buffers.newDirectFloatBuffer(renderModel.getRightTriNormal());
+            }
+
             gl.glVertexPointer(3, GL2.GL_FLOAT, 0, triCoordBuffer);  // Set data type and location, first Tri.
             gl.glNormalPointer(GL2.GL_FLOAT, 0, normalCoordBuffer);
             gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
             gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
             gl.glColor3f(131 / 255.0f, 205 / 255.0f, 1.0f);
             int size = renderModel.getTriCoords().length / 3;
+            if (renderMode == CUT_SELECT_MODE) {
+                size = renderModel.getRightTriCoords().length / 3;
+            }
             gl.glDrawArrays(GL2.GL_TRIANGLES, 0, size); // Draw the first cube!
             gl.glDisable(GL2.GL_LIGHTING);
             gl.glDisable(GL2.GL_LIGHT0);
             gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
             gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
-
-            if (renderMode == CUT_MODE) {
-                gl.glPopMatrix();
-                double pivot[] = {renderModel.getBasedPolygon().getMiddlePoint().getX(), renderModel.getBasedPolygon().getMiddlePoint().getY()};
-                drawLine(gl, pivot[0], pivot[1], 0);
-            }
         }
 
+        if (renderMode == CUT_MODE) {
+            gl.glPopMatrix();
+            double pivot[] = {renderModel.getBasedPolygon().getMiddlePoint().getX(), renderModel.getBasedPolygon().getMiddlePoint().getY()};
+            drawLine(gl, pivot[0], pivot[1], 0);
+            drawOutLine(gl, renderPolygon);
+        }
+        if (renderMode == CUT_SELECT_MODE) {
+            gl.glColor3f(1.0f, 0.0f, 0.0f);
+            for (int i = 0; i < renderModel.getRightPolygon().getPolygonPoint().size() - 1; i++) {
+                gl.glEnable(GL_LINE_SMOOTH);
+                gl.glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
+                gl.glLineWidth(8.0f);
+                gl.glBegin(GL2.GL_LINES);
+                gl.glVertex3f((float) renderModel.getRightPolygon().getPolygonPoint().get(i).getX(), (float) renderModel.getRightPolygon().getPolygonPoint().get(i).getY(), (float) renderModel.getBiggestZ());
+                gl.glVertex3f((float) renderModel.getRightPolygon().getPolygonPoint().get(i + 1).getX(), (float) renderModel.getRightPolygon().getPolygonPoint().get(i + 1).getY(), (float) renderModel.getBiggestZ());
+                gl.glEnd();
+            }
+            gl.glEnable(GL_LINE_SMOOTH);
+            gl.glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
+            gl.glLineWidth(8.0f);
+            gl.glBegin(GL2.GL_LINES);
+            gl.glVertex3f((float) renderModel.getRightPolygon().getPolygonPoint().getLast().getX(), (float) renderModel.getRightPolygon().getPolygonPoint().getLast().getY(), (float) renderModel.getBiggestZ());
+            gl.glVertex3f((float) renderModel.getRightPolygon().getPolygonPoint().getFirst().getX(), (float) renderModel.getRightPolygon().getPolygonPoint().getFirst().getY(), (float) renderModel.getBiggestZ());
+            gl.glEnd();
+        }
 
         if (renderMode == DRAW_MODE) {
             drawLine(gl, 0, 0, 0);
         }
     }
 
+    //模式大于0时，2D情况下的选择模式
     private void select2DMode(GL2 gl, Polygon renderPolygon) {
         // 绘制CAT
         if (renderMode == SHOW_CATLINE_MODE) {
@@ -280,6 +337,7 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
         }
     }
 
+    //模式大于0时，3D情况下的选择模式
     private void select3DMode(GL2 gl, Polygon renderPolygon) {
         if (renderMode == SHOW_TRIANGLE_MODE || renderMode == SHOW_LIFT_MODE) {
             for (int i = 0; i < renderModel.getModelTriangle().size(); i++) {
@@ -401,12 +459,16 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
         }
     }
 
-    private void drawOutLine(GL2 gl,Polygon renderPolygon){
+    //用旧方法绘制模型边框
+    private void drawOutLine(GL2 gl, Polygon renderPolygon) {
         for (int i = 0; i < renderPolygon.getPolygonLine().size(); i++) {
             gl.glColor3f(0.0f, 0.0f, 0.0f);
+            if (renderMode == CUT_MODE) {
+                gl.glColor3f(1.0f, 0.0f, 0.0f);
+            }
             gl.glEnable(GL_LINE_SMOOTH);
             gl.glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
-            gl.glLineWidth(5.0f);
+            gl.glLineWidth(8.0f);
             gl.glBegin(GL2.GL_LINES);
             gl.glVertex3f((float) renderPolygon.getPolygonLine().get(i).getStart().getX(), (float) renderPolygon.getPolygonLine().get(i).getStart().getY(), (float) renderPolygon.getPolygonLine().get(i).getStart().getZ());
             gl.glVertex3f((float) renderPolygon.getPolygonLine().get(i).getEnd().getX(), (float) renderPolygon.getPolygonLine().get(i).getEnd().getY(), (float) renderPolygon.getPolygonLine().get(i).getEnd().getZ());
@@ -415,6 +477,7 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
         }
     }
 
+    //绘图模式中绘出最后一步
     private void drawLastLine(GL2 gl) {
         int lastIndex = pointList.size();
         for (int i = pointList.size() - 1; i > 2; i--) {
@@ -451,6 +514,7 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
         gl.glEnd();
     }
 
+    //画边框
     private void drawSketchLine(GL2 gl) {
         for (int i = 0; i < pointList.size() - 2; i++) {
             gl.glEnable(GL_BLEND);
@@ -474,19 +538,35 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
 
     }
 
+    //鼠标点击事件
     @Override
     public void mousePressed(MouseEvent mouse) {
         if (mouse.getButton() == MouseEvent.BUTTON1) {
-            pointList.clear();
+            if (renderMode == DRAW_MODE || renderMode == CUT_MODE) {
+                pointList.clear();
+            }
             mouseLeftDown = true;
             mouseX = mouse.getX();
             mouseY = mouse.getY();
+
+//            if (renderMode == SHOW_MODEL_MODE) {
+//                int Xmove = lastMouseX - mouseX;
+//                int Ymove = lastMouseY - mouseY;
+//                rotateX += (Xmove%360)/20.0;
+//                rotateY += (Ymove%360)/20.0;
+//                if (rotateX > 360f) rotateX = rotateX - 360;
+//                if (rotateX < 0f) rotateX = rotateX + 360;
+//                if (rotateY > 360f) rotateY = rotateY - 360;
+//                if (rotateY < 0f) rotateY = rotateY + 360;
+//            }
+
             lastMouseX = mouseX;
             lastMouseY = mouseY;
 //            System.out.println(mouseX + "," + mouseY);
         }
     }
 
+    //鼠标松开事件
     @Override
     public void mouseReleased(MouseEvent mouse) {
         mouseLeftDown = false;
@@ -501,9 +581,40 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
     }
 
     @Override
+    public void mouseWheelMoved(MouseWheelEvent mouse) {
+    }
+
+    //鼠标拖拽事件
+    @Override
     public void mouseDragged(MouseEvent mouse) {
         mouseX = mouse.getX();
         mouseY = mouse.getY();
+        if (renderMode == SHOW_MODEL_MODE) {
+            int Ymove = lastMouseX - mouseX;
+            int Xmove = lastMouseY - mouseY;
+            if (Math.abs(Ymove) <= 200) Ymove = 0;
+            if (Math.abs(Xmove) <= 200) Xmove = 0;
+//            if (rotateY < 90 || (rotateY > 270 && rotateY < 360)) {
+//                rotateX += (Xmove % 360) / 100.0;
+//            } else {
+//                rotateX -= (Xmove % 360) / 100.0;
+//            }
+
+            if (rotateX < 90 || (rotateX > 270 && rotateX < 360)) {
+                rotateY -= (Ymove % 360) / 100.0;
+
+            } else {
+                rotateY += (Ymove % 360) / 100.0;
+            }
+
+            rotateX -= (Xmove % 360) / 100.0;
+//            rotateY -= (Ymove % 360) / 120.0;
+
+            if (rotateX > 360f) rotateX = rotateX - 360;
+            if (rotateX < 0f) rotateX = rotateX + 360;
+            if (rotateY > 360f) rotateY = rotateY - 360;
+            if (rotateY < 0f) rotateY = rotateY + 360;
+        }
 //            System.out.println(mouseX + "," + mouseY);
     }
 
@@ -514,6 +625,7 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
     public void mouseMoved(MouseEvent e) {
     }
 
+    //废弃了的选择颜色
     private void selectColor(int i, GL2 gl) {
 //        if (i % 3 == 0) {
 //            gl.glColor3f(131 / 255.0f, 205 / 255.0f, 1.0f);
@@ -532,6 +644,7 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
     public void keyTyped(KeyEvent e) {
     }
 
+    //仍然保留下来了的方向键控制模型转向
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_UP) {
             changeRotate(1);
@@ -548,7 +661,8 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
 
     }
 
-    public void changeRotate(int type) {
+    //改变模型方向
+    private void changeRotate(int type) {
         //up
         if (type == 0) rotateX -= 2.5f;
         //down
@@ -557,22 +671,26 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
         if (type == 2) rotateY -= 2.5f;
         //right
         if (type == 3) rotateY += 2.5f;
-        if (rotateX > 358.0f) rotateX = 0.0f;
-        if (rotateX < -1.0f) rotateX = 357.5f;
-        if (rotateY > 358.0f) rotateY = 0.0f;
-        if (rotateY < -1.0f) rotateY = 357.5f;
+
+        if (rotateX > 360f) rotateX = rotateX - 360;
+        if (rotateX < 0f) rotateX = rotateX + 360;
+        if (rotateY > 360f) rotateY = rotateY - 360;
+        if (rotateY < 0f) rotateY = rotateY + 360;
     }
 
+    //清空重绘
     public void clearAll() {
         pointList.clear();
-        renderModel.clearAll();
+        renderModel = new Model();
         renderMode = DRAW_MODE;
     }
 
+    //清空点集
     public void clearPointList() {
         pointList.clear();
     }
 
+    //画线
     private void drawLine(GL2 gl, double x, double y, double z) {
         if (mouseLeftDown) {
             double heightz = 0;
@@ -636,6 +754,7 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
         }
     }
 
+    //旋转一个点
     private Point rotatePoint(Point p, double angle, int rotateMode, double x, double y, double z) {
         //mode = 0: x
         //mode = 1: y
@@ -669,6 +788,7 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
         return new Point(newx, newy, newz);
     }
 
+    //根据边框点集建模
     public void beginBuilding() {
         System.out.println(pointList.size());
         int index = 0;
@@ -716,11 +836,12 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
             renderModel.setBasedPolygon(renderPolygon);
             renderModel.buildSketchModel();
             System.out.println("Point List OK");
-            renderMode = SHOW_OUTSIDELINE_MODE;
+            renderMode = SHOW_MODEL_MODE;
         }
         pointList.clear();
     }
 
+    //更改大于0时的显示模式
     public void showDetails() {
         if (renderMode < 8) {
             if (renderMode == 7) {
@@ -729,6 +850,150 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
                 renderMode++;
             }
         }
+    }
+
+    //Undo，返回到上一个可渲染的模型中
+    public void undo() {
+        if (canUndo) {
+            renderModel = lastModel;
+            lastModel = new Model();
+            canUndo = false;
+        }
+    }
+
+    //完成Cut操作后的选择
+    public boolean selectCut() {
+        LinkedList<Point> newPointList = new LinkedList<>();
+        int index = 0;
+        for (int i = 1; i < pointList.size() - 1; i++) {
+            pointList.set(i, new Point(pointList.get(i).getX(), pointList.get(i).getY(), 0));
+            pointList.set(index, new Point(pointList.get(index).getX(), pointList.get(index).getY(), 0));
+            double dis = pointList.get(i).distance(pointList.get(index));
+            if (dis >= 0.1) {
+                index = i;
+                newPointList.add(pointList.get(i));
+            }
+        }
+        pointList.clear();
+        pointList.addAll(newPointList);
+
+        int crossIndexX0 = 0;
+        int crossIndexY0 = 0;
+        int crossIndexX1 = 0;
+        int crossIndexY1 = 0;
+
+        Point cutPoint0 = new Point(0, 0, 0);
+        Point cutPoint1 = new Point(0, 0, 0);
+
+        newPointList.clear();
+        LinkedList<Point> modelPoint = renderModel.getBasedPolygon().getPolygonPoint();
+        int crossCount = 0;
+        for (int i = 0; i < pointList.size(); i++) {
+            int lastIndex = i + 1;
+            if (i == pointList.size() - 1) {
+                lastIndex = 0;
+            }
+            Line cutLine = new Line(pointList.get(i), pointList.get(lastIndex));
+            boolean isCross = false;
+//            boolean isOutside = true;
+            for (int j = 0; j < modelPoint.size(); j++) {
+                int polyLastIndex = j + 1;
+                if (j == modelPoint.size() - 1) {
+                    polyLastIndex = 0;
+                }
+                Line modelLine = new Line(modelPoint.get(j), modelPoint.get(polyLastIndex));
+                if (modelLine.intersect2D(cutLine)) {
+                    isCross = true;
+                    crossCount++;
+                    if (crossCount == 1) {
+                        crossIndexX0 = j;
+                        crossIndexY0 = polyLastIndex;
+                        cutPoint0 = PointcalculateIntersectionPoint(cutLine.getStart(), cutLine.getEnd(), modelLine.getStart(), modelLine.getEnd());
+                        newPointList.add(cutPoint0);
+                        newPointList.add(cutLine.getEnd());
+                    }
+                    if (crossCount == 2) {
+                        crossIndexX1 = j;
+                        crossIndexY1 = polyLastIndex;
+
+                        boolean outsideLine = false;
+                        for (int t = 1; t < newPointList.size() - 1; t++) {
+                            if (!renderModel.getBasedPolygon().inPolygon(newPointList.get(t))) {
+                                outsideLine = true;
+                                break;
+                            }
+                        }
+
+                        if (outsideLine) {
+                            crossCount = 1;
+                            crossIndexX0 = j;
+                            crossIndexY0 = polyLastIndex;
+                            cutPoint0 = PointcalculateIntersectionPoint(cutLine.getStart(), cutLine.getEnd(), modelLine.getStart(), modelLine.getEnd());
+                            newPointList.clear();
+                            newPointList.add(cutPoint0);
+                            newPointList.add(cutLine.getEnd());
+                        } else {
+                            cutPoint1 = PointcalculateIntersectionPoint(cutLine.getStart(), cutLine.getEnd(), modelLine.getStart(), modelLine.getEnd());
+                            newPointList.add(cutLine.getStart());
+                            newPointList.add(cutPoint1);
+                        }
+                    }
+                    break;
+                }
+            }
+            if (crossCount >= 2) {
+                break;
+            }
+            if (!isCross && crossCount == 1) {
+                newPointList.add(cutLine.getStart());
+                newPointList.add(cutLine.getEnd());
+            }
+        }
+        pointList.clear();
+        if (crossCount == 2) {
+            if (newPointList.size() < 4) {
+                return false;
+            } else {
+                boolean outsideLine = false;
+                for (int i = 1; i < newPointList.size() - 1; i++) {
+                    if (!renderModel.getBasedPolygon().inPolygon(newPointList.get(i))) {
+                        outsideLine = true;
+                        break;
+                    }
+                }
+                if (outsideLine) {
+                    return false;
+                } else {
+                    pointList = newPointList;
+                    renderModel.divideModel(crossIndexX0, crossIndexY0, crossIndexX1, crossIndexY1, pointList);
+                    return true;
+                }
+            }
+        } else {
+            return false;
+        }
+    }
+
+    //计算交点配套
+    private double calculateVectorProduct(Point P1, Point P2, Point P3, Point P4) {
+
+        return (P2.getX() - P1.getX()) * (P4.getY() - P3.getY()) - (P2.getY() - P1.getY()) * (P4.getX() - P3.getX());
+
+    }
+
+    //计算线段AB与CD的交点
+    private Point PointcalculateIntersectionPoint(Point A, Point B, Point C, Point D) {
+
+        double t1 = calculateVectorProduct(C, D, A, B);
+
+        double t2 = calculateVectorProduct(A, B, A, C);
+
+        double x = C.getX() + (D.getX() - C.getX()) * t2 / t1;
+
+        double y = C.getY() + (D.getY() - C.getY()) * t2 / t1;
+
+        return new Point(x, y, 0);
+
     }
 
     public void keyReleased(KeyEvent e) {
