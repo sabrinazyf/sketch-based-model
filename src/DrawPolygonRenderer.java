@@ -30,6 +30,13 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
     private static final int CUT_SELECT_MODE = -3;
     private float rotateX;
     private float rotateY;
+    private float middlePivot[] = {0f, 0f};
+
+
+    private int modelCount = 0;
+    private LinkedList<Model> modelList = new LinkedList<>();
+    private int modelColor[] = new int[0];
+    private int thisModel = 0;
 
     private GLU glu;
     //    private Polygon renderPolygon = new Polygon();
@@ -37,7 +44,6 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
     private Model lastModel = new Model();
 
     private boolean canUndo = false;
-
     private int renderMode;
 
     private boolean mouseLeftDown;
@@ -120,10 +126,11 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
     }
 
     public void smoothModel() {
-        for (int i = 0; i < 3; i++) {
-            renderModel.smooth(1, 0);
+        for (int i = 0; i < modelCount; i++) {
+            for (int j = 0; j < 3; j++) {
+                modelList.get(i).smooth(1, 0);
+            }
         }
-//        renderModel.loopSub();
     }
 
     //具体的选择模式
@@ -135,98 +142,115 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
             rotateX = 0.0f;
             rotateY = 0.0f;
         }
-        Polygon renderPolygon = renderModel.getBasedPolygon();
+        if (modelCount == 0) {
+            if (renderMode == DRAW_MODE) {
+                drawLine(gl, 0, 0, 0);
+            }
+        }
         gl.glPushMatrix();
         if (renderMode == SHOW_MODEL_MODE) {
-            float pivot[] = {(float) renderModel.getBasedPolygon().getMiddlePoint().getX(), (float) renderModel.getBasedPolygon().getMiddlePoint().getY()};
-            gl.glTranslatef(pivot[0], pivot[1], 0.0f);
-            gl.glRotatef(rotateX, pivot[0], 0.0f, 0.0f);
+//            float pivot[] = new float[2];
+//            for (int modelI = 0; modelI < modelCount; modelI++) {
+//                pivot[0] += (float) modelList.get(modelI).getBasedPolygon().getMiddlePoint().getX();
+//                pivot[1] += (float) modelList.get(modelI).getBasedPolygon().getMiddlePoint().getY();
+//            }
+//            pivot[0] /= modelCount;
+//            pivot[1] /= modelCount;
+//            System.out.println("old: " + (float) modelList.get(0).getBasedPolygon().getMiddlePoint().getX() + ", " + (float) modelList.get(0).getBasedPolygon().getMiddlePoint().getY());
+//            System.out.println("new: " + pivot[0] + ", " + pivot[1]);
+//            System.out.println("now: " + (float) modelList.get(modelCount - 1).getBasedPolygon().getMiddlePoint().getX() + ", " + (float) modelList.get(modelCount - 1).getBasedPolygon().getMiddlePoint().getY());
+            gl.glTranslatef(middlePivot[0], middlePivot[1], 0.0f);
+            gl.glRotatef(rotateX, middlePivot[0], 0.0f, 0.0f);
 //            gl.glRotatef(rotateX, 0.0f, 0.0f, pivot[2]);
-            gl.glRotatef(rotateY, 0.0f, pivot[1], 0.0f);
-            gl.glTranslatef(-1 * pivot[0], -1 * pivot[1], 0.0f);
+            gl.glRotatef(rotateY, 0.0f, middlePivot[1], 0.0f);
+            gl.glTranslatef(-1 * middlePivot[0], -1 * middlePivot[1], 0.0f);
         }
-        // 绘制原多边形
-        if (renderMode >= 0 && renderMode != SHOW_CATLINE_MODE && renderMode != SHOW_MODEL_MODE) {
-            drawOutLine(gl, renderPolygon);
-        }
-        select2DMode(gl, renderPolygon);
-        select3DMode(gl, renderPolygon);
+        for (int modelI = 0; modelI < modelCount; modelI++) {
+            Polygon renderPolygon = modelList.get(modelI).getBasedPolygon();
 
-        if (renderMode == SHOW_MODEL_MODE || renderMode == CUT_MODE || renderMode == CUT_SELECT_MODE) {
-            gl.glEnable(GL_MULTISAMPLE);
-            gl.glEnable(GL2.GL_LIGHTING);
-            gl.glEnable(GL2.GL_LIGHT0);
+            // 绘制原多边形
+            if (renderMode >= 0 && renderMode != SHOW_CATLINE_MODE && renderMode != SHOW_MODEL_MODE) {
+                drawOutLine(gl, renderPolygon);
+            }
+            select2DMode(gl, renderPolygon);
+            select3DMode(gl, renderPolygon, modelI);
+
+            if (renderMode == SHOW_MODEL_MODE || renderMode == CUT_MODE || renderMode == CUT_SELECT_MODE || (renderMode == DRAW_MODE && modelCount > 0)) {
+                gl.glEnable(GL_MULTISAMPLE);
+                gl.glEnable(GL2.GL_LIGHTING);
+                gl.glEnable(GL2.GL_LIGHT0);
 //            gl.glEnable( GL2.GL_NORMALIZE );
 
-            // weak RED ambient
-            float[] ambientLight = {0f, 0.f, 0.f, 0f};
-            gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_AMBIENT, ambientLight, 0);
+                // weak RED ambient
+                float[] ambientLight = {0f, 0.f, 0.f, 0f};
+                gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_AMBIENT, ambientLight, 0);
 
-            // multicolor diffuse
-            float[] diffuseLight = {1f, 1f, 1f, 0f};
-            gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_DIFFUSE, diffuseLight, 0);
+                // multicolor diffuse
+                float[] diffuseLight = {1f, 1f, 1f, 0f};
+                gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_DIFFUSE, diffuseLight, 0);
 
-            float specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-            gl.glLightfv(GL_LIGHT0, GL_SPECULAR, specular, 0);
+                float specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+                gl.glLightfv(GL_LIGHT0, GL_SPECULAR, specular, 0);
 
-            float specref[] = {1.0f, 1.0f, 1.0f, 1.0f};
-            // 设置多边形正面的镜面反射属性
-            gl.glMaterialfv(GL_FRONT, GL_SPECULAR, specref, 0);
-            // 指定镜面指数
-            gl.glMateriali(GL_FRONT, GL_SHININESS, 128);
+                float specref[] = {1.0f, 1.0f, 1.0f, 1.0f};
+                // 设置多边形正面的镜面反射属性
+                gl.glMaterialfv(GL_FRONT, GL_SPECULAR, specref, 0);
+                // 指定镜面指数
+                gl.glMateriali(GL_FRONT, GL_SHININESS, 128);
 
-            FloatBuffer triCoordBuffer = Buffers.newDirectFloatBuffer(renderModel.getTriCoords());
-            FloatBuffer normalCoordBuffer = Buffers.newDirectFloatBuffer(renderModel.getNormalCoords());
+                FloatBuffer triCoordBuffer = Buffers.newDirectFloatBuffer(modelList.get(modelI).getTriCoords());
+                FloatBuffer normalCoordBuffer = Buffers.newDirectFloatBuffer(modelList.get(modelI).getNormalCoords());
 
-            if (renderMode == CUT_SELECT_MODE) {
-                triCoordBuffer = Buffers.newDirectFloatBuffer(renderModel.getRightTriCoords());
-                normalCoordBuffer = Buffers.newDirectFloatBuffer(renderModel.getRightTriNormal());
+                if (renderMode == CUT_SELECT_MODE) {
+                    triCoordBuffer = Buffers.newDirectFloatBuffer(modelList.get(modelI).getRightTriCoords());
+                    normalCoordBuffer = Buffers.newDirectFloatBuffer(modelList.get(modelI).getRightTriNormal());
+                }
+
+                gl.glVertexPointer(3, GL2.GL_FLOAT, 0, triCoordBuffer);  // Set data type and location, first Tri.
+                gl.glNormalPointer(GL2.GL_FLOAT, 0, normalCoordBuffer);
+                gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
+                gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
+                gl.glColor3f(131 / 255.0f, 205 / 255.0f, 1.0f);
+                int size = modelList.get(modelI).getTriCoords().length / 3;
+                if (renderMode == CUT_SELECT_MODE) {
+                    size = modelList.get(modelI).getRightTriCoords().length / 3;
+                }
+                gl.glDrawArrays(GL2.GL_TRIANGLES, 0, size); // Draw the first cube!
+                gl.glDisable(GL2.GL_LIGHTING);
+                gl.glDisable(GL2.GL_LIGHT0);
+                gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
+                gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
             }
 
-            gl.glVertexPointer(3, GL2.GL_FLOAT, 0, triCoordBuffer);  // Set data type and location, first Tri.
-            gl.glNormalPointer(GL2.GL_FLOAT, 0, normalCoordBuffer);
-            gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
-            gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
-            gl.glColor3f(131 / 255.0f, 205 / 255.0f, 1.0f);
-            int size = renderModel.getTriCoords().length / 3;
-            if (renderMode == CUT_SELECT_MODE) {
-                size = renderModel.getRightTriCoords().length / 3;
+            if (renderMode == CUT_MODE) {
+                gl.glPopMatrix();
+                double pivot[] = {modelList.get(modelI).getBasedPolygon().getMiddlePoint().getX(), modelList.get(modelI).getBasedPolygon().getMiddlePoint().getY()};
+                drawLine(gl, pivot[0], pivot[1], 0);
+                drawOutLine(gl, renderPolygon);
             }
-            gl.glDrawArrays(GL2.GL_TRIANGLES, 0, size); // Draw the first cube!
-            gl.glDisable(GL2.GL_LIGHTING);
-            gl.glDisable(GL2.GL_LIGHT0);
-            gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
-            gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
-        }
-
-        if (renderMode == CUT_MODE) {
-            gl.glPopMatrix();
-            double pivot[] = {renderModel.getBasedPolygon().getMiddlePoint().getX(), renderModel.getBasedPolygon().getMiddlePoint().getY()};
-            drawLine(gl, pivot[0], pivot[1], 0);
-            drawOutLine(gl, renderPolygon);
-        }
-        if (renderMode == CUT_SELECT_MODE) {
-            gl.glColor3f(1.0f, 0.0f, 0.0f);
-            for (int i = 0; i < renderModel.getRightPolygon().getPolygonPoint().size() - 1; i++) {
+            if (renderMode == CUT_SELECT_MODE) {
+                gl.glColor3f(1.0f, 0.0f, 0.0f);
+                for (int i = 0; i < modelList.get(modelI).getRightPolygon().getPolygonPoint().size() - 1; i++) {
+                    gl.glEnable(GL_LINE_SMOOTH);
+                    gl.glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
+                    gl.glLineWidth(8.0f);
+                    gl.glBegin(GL2.GL_LINES);
+                    gl.glVertex3f((float) modelList.get(modelI).getRightPolygon().getPolygonPoint().get(i).getX(), (float) modelList.get(modelI).getRightPolygon().getPolygonPoint().get(i).getY(), (float) modelList.get(modelI).getBiggestZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getRightPolygon().getPolygonPoint().get(i + 1).getX(), (float) modelList.get(modelI).getRightPolygon().getPolygonPoint().get(i + 1).getY(), (float) modelList.get(modelI).getBiggestZ());
+                    gl.glEnd();
+                }
                 gl.glEnable(GL_LINE_SMOOTH);
                 gl.glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
                 gl.glLineWidth(8.0f);
                 gl.glBegin(GL2.GL_LINES);
-                gl.glVertex3f((float) renderModel.getRightPolygon().getPolygonPoint().get(i).getX(), (float) renderModel.getRightPolygon().getPolygonPoint().get(i).getY(), (float) renderModel.getBiggestZ());
-                gl.glVertex3f((float) renderModel.getRightPolygon().getPolygonPoint().get(i + 1).getX(), (float) renderModel.getRightPolygon().getPolygonPoint().get(i + 1).getY(), (float) renderModel.getBiggestZ());
+                gl.glVertex3f((float) modelList.get(modelI).getRightPolygon().getPolygonPoint().getLast().getX(), (float) modelList.get(modelI).getRightPolygon().getPolygonPoint().getLast().getY(), (float) modelList.get(modelI).getBiggestZ());
+                gl.glVertex3f((float) modelList.get(modelI).getRightPolygon().getPolygonPoint().getFirst().getX(), (float) modelList.get(modelI).getRightPolygon().getPolygonPoint().getFirst().getY(), (float) modelList.get(modelI).getBiggestZ());
                 gl.glEnd();
             }
-            gl.glEnable(GL_LINE_SMOOTH);
-            gl.glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
-            gl.glLineWidth(8.0f);
-            gl.glBegin(GL2.GL_LINES);
-            gl.glVertex3f((float) renderModel.getRightPolygon().getPolygonPoint().getLast().getX(), (float) renderModel.getRightPolygon().getPolygonPoint().getLast().getY(), (float) renderModel.getBiggestZ());
-            gl.glVertex3f((float) renderModel.getRightPolygon().getPolygonPoint().getFirst().getX(), (float) renderModel.getRightPolygon().getPolygonPoint().getFirst().getY(), (float) renderModel.getBiggestZ());
-            gl.glEnd();
-        }
 
-        if (renderMode == DRAW_MODE) {
-            drawLine(gl, 0, 0, 0);
+            if (renderMode == DRAW_MODE) {
+                drawLine(gl, 0, 0, 0);
+            }
         }
     }
 
@@ -338,15 +362,15 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
     }
 
     //模式大于0时，3D情况下的选择模式
-    private void select3DMode(GL2 gl, Polygon renderPolygon) {
+    private void select3DMode(GL2 gl, Polygon renderPolygon, int modelI) {
         if (renderMode == SHOW_TRIANGLE_MODE || renderMode == SHOW_LIFT_MODE) {
-            for (int i = 0; i < renderModel.getModelTriangle().size(); i++) {
+            for (int i = 0; i < modelList.get(modelI).getModelTriangle().size(); i++) {
                 if (renderMode != SHOW_LIFT_MODE) {
                     selectColor(i, gl);
                     gl.glBegin(GL2.GL_TRIANGLES);
-                    gl.glVertex3f((float) renderModel.getModelTriangle().get(i).getA().getX(), (float) renderModel.getModelTriangle().get(i).getA().getY(), (float) renderModel.getModelTriangle().get(i).getA().getZ());
-                    gl.glVertex3f((float) renderModel.getModelTriangle().get(i).getB().getX(), (float) renderModel.getModelTriangle().get(i).getB().getY(), (float) renderModel.getModelTriangle().get(i).getB().getZ());
-                    gl.glVertex3f((float) renderModel.getModelTriangle().get(i).getC().getX(), (float) renderModel.getModelTriangle().get(i).getC().getY(), (float) renderModel.getModelTriangle().get(i).getC().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangle().get(i).getA().getX(), (float) modelList.get(modelI).getModelTriangle().get(i).getA().getY(), (float) modelList.get(modelI).getModelTriangle().get(i).getA().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangle().get(i).getB().getX(), (float) modelList.get(modelI).getModelTriangle().get(i).getB().getY(), (float) modelList.get(modelI).getModelTriangle().get(i).getB().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangle().get(i).getC().getX(), (float) modelList.get(modelI).getModelTriangle().get(i).getC().getY(), (float) modelList.get(modelI).getModelTriangle().get(i).getC().getZ());
                     gl.glEnd();
                 }
                 if (renderMode != SHOW_MODEL_MODE) {
@@ -355,8 +379,8 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
                     gl.glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
                     gl.glLineWidth(2.0f);
                     gl.glBegin(GL2.GL_LINES);
-                    gl.glVertex3f((float) renderModel.getModelTriangle().get(i).getA().getX(), (float) renderModel.getModelTriangle().get(i).getA().getY(), (float) renderModel.getModelTriangle().get(i).getA().getZ());
-                    gl.glVertex3f((float) renderModel.getModelTriangle().get(i).getB().getX(), (float) renderModel.getModelTriangle().get(i).getB().getY(), (float) renderModel.getModelTriangle().get(i).getB().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangle().get(i).getA().getX(), (float) modelList.get(modelI).getModelTriangle().get(i).getA().getY(), (float) modelList.get(modelI).getModelTriangle().get(i).getA().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangle().get(i).getB().getX(), (float) modelList.get(modelI).getModelTriangle().get(i).getB().getY(), (float) modelList.get(modelI).getModelTriangle().get(i).getB().getZ());
                     gl.glEnd();
 
                     gl.glColor3f(0.0f, 0.0f, 0.0f);
@@ -364,8 +388,8 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
                     gl.glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
                     gl.glLineWidth(2.0f);
                     gl.glBegin(GL2.GL_LINES);
-                    gl.glVertex3f((float) renderModel.getModelTriangle().get(i).getC().getX(), (float) renderModel.getModelTriangle().get(i).getC().getY(), (float) renderModel.getModelTriangle().get(i).getC().getZ());
-                    gl.glVertex3f((float) renderModel.getModelTriangle().get(i).getA().getX(), (float) renderModel.getModelTriangle().get(i).getA().getY(), (float) renderModel.getModelTriangle().get(i).getA().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangle().get(i).getC().getX(), (float) modelList.get(modelI).getModelTriangle().get(i).getC().getY(), (float) modelList.get(modelI).getModelTriangle().get(i).getC().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangle().get(i).getA().getX(), (float) modelList.get(modelI).getModelTriangle().get(i).getA().getY(), (float) modelList.get(modelI).getModelTriangle().get(i).getA().getZ());
                     gl.glEnd();
 
                     gl.glColor3f(0.0f, 0.0f, 0.0f);
@@ -373,26 +397,26 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
                     gl.glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
                     gl.glLineWidth(2.0f);
                     gl.glBegin(GL2.GL_LINES);
-                    gl.glVertex3f((float) renderModel.getModelTriangle().get(i).getC().getX(), (float) renderModel.getModelTriangle().get(i).getC().getY(), (float) renderModel.getModelTriangle().get(i).getC().getZ());
-                    gl.glVertex3f((float) renderModel.getModelTriangle().get(i).getB().getX(), (float) renderModel.getModelTriangle().get(i).getB().getY(), (float) renderModel.getModelTriangle().get(i).getB().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangle().get(i).getC().getX(), (float) modelList.get(modelI).getModelTriangle().get(i).getC().getY(), (float) modelList.get(modelI).getModelTriangle().get(i).getC().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangle().get(i).getB().getX(), (float) modelList.get(modelI).getModelTriangle().get(i).getB().getY(), (float) modelList.get(modelI).getModelTriangle().get(i).getB().getZ());
                     gl.glEnd();
 
                     gl.glColor3f(1.0f, 1.0f, 0.0f);
                     gl.glPointSize(5.0f);//在绘制之前要设置要相关参数，这里设置点的大小为5像素
                     gl.glBegin(GL_POINTS);
-                    gl.glVertex3f((float) renderModel.getModelTriangle().get(i).getA().getX(), (float) renderModel.getModelTriangle().get(i).getA().getY(), (float) renderModel.getModelTriangle().get(i).getA().getZ());
-                    gl.glVertex3f((float) renderModel.getModelTriangle().get(i).getB().getX(), (float) renderModel.getModelTriangle().get(i).getB().getY(), (float) renderModel.getModelTriangle().get(i).getB().getZ());
-                    gl.glVertex3f((float) renderModel.getModelTriangle().get(i).getC().getX(), (float) renderModel.getModelTriangle().get(i).getC().getY(), (float) renderModel.getModelTriangle().get(i).getC().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangle().get(i).getA().getX(), (float) modelList.get(modelI).getModelTriangle().get(i).getA().getY(), (float) modelList.get(modelI).getModelTriangle().get(i).getA().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangle().get(i).getB().getX(), (float) modelList.get(modelI).getModelTriangle().get(i).getB().getY(), (float) modelList.get(modelI).getModelTriangle().get(i).getB().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangle().get(i).getC().getX(), (float) modelList.get(modelI).getModelTriangle().get(i).getC().getY(), (float) modelList.get(modelI).getModelTriangle().get(i).getC().getZ());
                     gl.glEnd();
                 }
             }
-            for (int i = 0; i < renderModel.getModelTriangleLink().size(); i++) {
+            for (int i = 0; i < modelList.get(modelI).getModelTriangleLink().size(); i++) {
                 if (renderMode != SHOW_LIFT_MODE) {
                     selectColor(i, gl);
                     gl.glBegin(GL2.GL_TRIANGLES);
-                    gl.glVertex3f((float) renderModel.getModelTriangleLink().get(i).getA().getX(), (float) renderModel.getModelTriangleLink().get(i).getA().getY(), (float) renderModel.getModelTriangleLink().get(i).getA().getZ());
-                    gl.glVertex3f((float) renderModel.getModelTriangleLink().get(i).getB().getX(), (float) renderModel.getModelTriangleLink().get(i).getB().getY(), (float) renderModel.getModelTriangleLink().get(i).getB().getZ());
-                    gl.glVertex3f((float) renderModel.getModelTriangleLink().get(i).getC().getX(), (float) renderModel.getModelTriangleLink().get(i).getC().getY(), (float) renderModel.getModelTriangleLink().get(i).getC().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangleLink().get(i).getA().getX(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getA().getY(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getA().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangleLink().get(i).getB().getX(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getB().getY(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getB().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangleLink().get(i).getC().getX(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getC().getY(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getC().getZ());
                     gl.glEnd();
                 }
 
@@ -402,8 +426,8 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
                     gl.glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
                     gl.glLineWidth(2.0f);
                     gl.glBegin(GL2.GL_LINES);
-                    gl.glVertex3f((float) renderModel.getModelTriangleLink().get(i).getA().getX(), (float) renderModel.getModelTriangleLink().get(i).getA().getY(), (float) renderModel.getModelTriangleLink().get(i).getA().getZ());
-                    gl.glVertex3f((float) renderModel.getModelTriangleLink().get(i).getB().getX(), (float) renderModel.getModelTriangleLink().get(i).getB().getY(), (float) renderModel.getModelTriangleLink().get(i).getB().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangleLink().get(i).getA().getX(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getA().getY(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getA().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangleLink().get(i).getB().getX(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getB().getY(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getB().getZ());
                     gl.glEnd();
 
                     gl.glColor3f(0.0f, 0.0f, 0.0f);
@@ -411,8 +435,8 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
                     gl.glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
                     gl.glLineWidth(2.0f);
                     gl.glBegin(GL2.GL_LINES);
-                    gl.glVertex3f((float) renderModel.getModelTriangleLink().get(i).getC().getX(), (float) renderModel.getModelTriangleLink().get(i).getC().getY(), (float) renderModel.getModelTriangleLink().get(i).getC().getZ());
-                    gl.glVertex3f((float) renderModel.getModelTriangleLink().get(i).getA().getX(), (float) renderModel.getModelTriangleLink().get(i).getA().getY(), (float) renderModel.getModelTriangleLink().get(i).getA().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangleLink().get(i).getC().getX(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getC().getY(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getC().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangleLink().get(i).getA().getX(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getA().getY(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getA().getZ());
                     gl.glEnd();
 
                     gl.glColor3f(0.0f, 0.0f, 0.0f);
@@ -420,16 +444,16 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
                     gl.glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
                     gl.glLineWidth(2.0f);
                     gl.glBegin(GL2.GL_LINES);
-                    gl.glVertex3f((float) renderModel.getModelTriangleLink().get(i).getC().getX(), (float) renderModel.getModelTriangleLink().get(i).getC().getY(), (float) renderModel.getModelTriangleLink().get(i).getC().getZ());
-                    gl.glVertex3f((float) renderModel.getModelTriangleLink().get(i).getB().getX(), (float) renderModel.getModelTriangleLink().get(i).getB().getY(), (float) renderModel.getModelTriangleLink().get(i).getB().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangleLink().get(i).getC().getX(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getC().getY(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getC().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangleLink().get(i).getB().getX(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getB().getY(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getB().getZ());
                     gl.glEnd();
 
                     gl.glColor3f(1.0f, 1.0f, 0.0f);
                     gl.glPointSize(5.0f);//在绘制之前要设置要相关参数，这里设置点的大小为5像素
                     gl.glBegin(GL_POINTS);
-                    gl.glVertex3f((float) renderModel.getModelTriangleLink().get(i).getA().getX(), (float) renderModel.getModelTriangleLink().get(i).getA().getY(), (float) renderModel.getModelTriangleLink().get(i).getA().getZ());
-                    gl.glVertex3f((float) renderModel.getModelTriangleLink().get(i).getB().getX(), (float) renderModel.getModelTriangleLink().get(i).getB().getY(), (float) renderModel.getModelTriangleLink().get(i).getB().getZ());
-                    gl.glVertex3f((float) renderModel.getModelTriangleLink().get(i).getC().getX(), (float) renderModel.getModelTriangleLink().get(i).getC().getY(), (float) renderModel.getModelTriangleLink().get(i).getC().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangleLink().get(i).getA().getX(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getA().getY(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getA().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangleLink().get(i).getB().getX(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getB().getY(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getB().getZ());
+                    gl.glVertex3f((float) modelList.get(modelI).getModelTriangleLink().get(i).getC().getX(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getC().getY(), (float) modelList.get(modelI).getModelTriangleLink().get(i).getC().getZ());
                     gl.glEnd();
                 }
             }
@@ -500,6 +524,14 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
         for (int j = 0; j <= lastIndex; j++) {
             pointListCopy.add(pointList.get(j));
         }
+
+        double heightz = 0;
+        for (int i = 0; i < modelCount; i++) {
+            if (heightz <= modelList.get(i).getBiggestZ()) {
+                heightz = modelList.get(i).getBiggestZ() * 10;
+            }
+        }
+
         pointList.clear();
         pointList.addAll(pointListCopy);
         drawSketchLine(gl);
@@ -509,13 +541,19 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
         gl.glColor3f(1.0f, 0.0f, 0.0f);
         gl.glLineWidth(5.0f);
         gl.glBegin(GL2.GL_LINES);
-        gl.glVertex3f((float) pointList.getFirst().getX(), (float) pointList.getFirst().getY(), (float) pointList.getFirst().getZ());
-        gl.glVertex3f((float) pointList.get(lastIndex - 1).getX(), (float) pointList.get(lastIndex - 1).getY(), (float) pointList.get(lastIndex - 1).getZ());
+        gl.glVertex3f((float) pointList.getFirst().getX(), (float) pointList.getFirst().getY(), (float) heightz);
+        gl.glVertex3f((float) pointList.get(lastIndex - 1).getX(), (float) pointList.get(lastIndex - 1).getY(), (float) heightz);
         gl.glEnd();
     }
 
     //画边框
     private void drawSketchLine(GL2 gl) {
+        double heightz = 0;
+        for (int i = 0; i < modelCount; i++) {
+            if (heightz <= modelList.get(i).getBiggestZ()) {
+                heightz = modelList.get(i).getBiggestZ() * 10;
+            }
+        }
         for (int i = 0; i < pointList.size() - 2; i++) {
             gl.glEnable(GL_BLEND);
             gl.glEnable(GL_LINE_SMOOTH);
@@ -523,8 +561,8 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
             gl.glColor3f(1.0f, 0.0f, 0.0f);
             gl.glLineWidth(5.0f);
             gl.glBegin(GL2.GL_LINES);
-            gl.glVertex3f((float) pointList.get(i).getX(), (float) pointList.get(i).getY(), (float) pointList.get(i).getZ());
-            gl.glVertex3f((float) pointList.get(i + 1).getX(), (float) pointList.get(i + 1).getY(), (float) pointList.get(i + 1).getZ());
+            gl.glVertex3f((float) pointList.get(i).getX(), (float) pointList.get(i).getY(), (float) heightz);
+            gl.glVertex3f((float) pointList.get(i + 1).getX(), (float) pointList.get(i + 1).getY(), (float) heightz);
             gl.glEnd();
         }
     }
@@ -681,6 +719,10 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
     //清空重绘
     public void clearAll() {
         pointList.clear();
+        modelCount = 0;
+        modelColor = new int[0];
+        thisModel = 0;
+        modelList = new LinkedList<>();
         renderModel = new Model();
         renderMode = DRAW_MODE;
     }
@@ -694,10 +736,13 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
     private void drawLine(GL2 gl, double x, double y, double z) {
         if (mouseLeftDown) {
             double heightz = 0;
-            if (renderMode == CUT_MODE) {
-                heightz = renderModel.getBiggestZ() * 10;
-//                heightz = 100.0;
-            }
+
+//                for (int i = 0; i < modelCount; i++) {
+//                    if (heightz <= modelList.get(i).getBiggestZ()) {
+//                        heightz =  modelList.get(i).getBiggestZ() * 10;
+//                    }
+//                }
+//
 
             drawSketchLine(gl);
             int viewport[] = new int[4];
@@ -833,9 +878,21 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
             pointList.clear();
             renderMode = DRAW_MODE;
         } else {
+//            renderModel.clearAll();
+            renderModel = new Model();
             renderModel.setBasedPolygon(renderPolygon);
             renderModel.buildSketchModel();
             System.out.println("Point List OK");
+            modelList.add(renderModel);
+            modelCount++;
+            if (modelCount == 1) {
+                middlePivot[0] = (float) renderModel.getBasedPolygon().getMiddlePoint().getX();
+                middlePivot[1] = middlePivot[1] + (float) renderModel.getBasedPolygon().getMiddlePoint().getY();
+            } else {
+                middlePivot[0] = 0.5f * (middlePivot[0] + (float) renderModel.getBasedPolygon().getMiddlePoint().getX());
+                middlePivot[1] = 0.5f * (middlePivot[1] + (float) renderModel.getBasedPolygon().getMiddlePoint().getY());
+            }
+            thisModel = modelCount - 1;
             renderMode = SHOW_MODEL_MODE;
         }
         pointList.clear();

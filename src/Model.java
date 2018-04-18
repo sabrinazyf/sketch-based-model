@@ -229,6 +229,9 @@ public class Model {
         rightTriCoords = new float[0];
         leftTriNormal = new float[0];
         rightTriNormal = new float[0];
+
+        pointLinkCoords = new int[0];
+        pointLinkIndex = new LinkedList<>();
     }
 
     //构造椭圆的边
@@ -651,6 +654,9 @@ public class Model {
 //        updateNormal();
         buildAxisIndex();
         System.out.println("Building Step 3");
+        for (int i = 0; i < 4; i++) {
+            smooth(1, 0);
+        }
     }
 
     //根据中线分割模型

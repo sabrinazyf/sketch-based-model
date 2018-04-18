@@ -68,16 +68,17 @@ public class FrameMain {
             public void actionPerformed(ActionEvent e) {
                 if (canvas.getRenderMode() == -1) {
                     canvas.beginBuilding();
-                    finishDrawButton.setText("Draw Mode");
+                    finishDrawButton.setText("Draw");
                     modeLabel.setText("Display Mode");
                     resetButton.setText("Detail");
                     if (canvas.getRenderMode() >= 0) {
                         canvas.setRenderMode(7);
                     }
                 } else {
-                    canvas.clearAll();
+//                    canvas.clearAll();
+                    canvas.setRenderMode(DRAW_MODE);
                     finishDrawButton.setText("Finish Draw");
-                    modeLabel.setText("Draw Mode");
+                    modeLabel.setText("Draw");
                     resetButton.setText("Reset");
                 }
             }
@@ -87,25 +88,25 @@ public class FrameMain {
         cutButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (canvas.getRenderMode() >= 0) {
-                    canvas.clearPointList();
-                    canvas.setRenderMode(CUT_MODE);
-                    turnToCutMode();
-                } else if (canvas.getRenderMode() == -2) {
-                    cutButton.setText("Select");
-                    modeLabel.setText("Select Region");
-                    boolean successCut = canvas.selectCut();
-                    if (successCut) {
-                        canvas.setRenderMode(CUT_SELECT_MODE);
-                    } else {
-                        turnToCutMode();
-                    }
-                } else {
-                    cutButton.setText("Cut Mode");
-                    resetButton.setText("Detail");
-                    modeLabel.setText("Display Mode");
-                    canvas.setRenderMode(SHOW_MODEL_MODE);
-                }
+//                if (canvas.getRenderMode() >= 0) {
+//                    canvas.clearPointList();
+//                    canvas.setRenderMode(CUT_MODE);
+//                    turnToCutMode();
+//                } else if (canvas.getRenderMode() == -2) {
+//                    cutButton.setText("Select");
+//                    modeLabel.setText("Select Region");
+//                    boolean successCut = canvas.selectCut();
+//                    if (successCut) {
+//                        canvas.setRenderMode(CUT_SELECT_MODE);
+//                    } else {
+//                        turnToCutMode();
+//                    }
+//                } else {
+//                    cutButton.setText("Cut Mode");
+//                    resetButton.setText("Detail");
+//                    modeLabel.setText("Display Mode");
+//                    canvas.setRenderMode(SHOW_MODEL_MODE);
+//                }
             }
         });
 
@@ -124,7 +125,7 @@ public class FrameMain {
                 canvas.clearAll();
                 finishDrawButton.setText("Finish Draw");
                 cutButton.setText("Cut Mode");
-                modeLabel.setText("Draw Mode");
+                modeLabel.setText("Draw");
             }
         });
 
@@ -144,20 +145,7 @@ public class FrameMain {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (canvas.getRenderMode() >= 0) {
-                    canvas.showDetails();
-                }
-                if (canvas.getRenderMode() == DRAW_MODE) {
-                    canvas.clearAll();
-                }
-                if (canvas.getRenderMode() == CUT_MODE) {
-                    canvas.clearPointList();
-                }
-                if (canvas.getRenderMode() == CUT_SELECT_MODE) {
-                    canvas.clearPointList();
-                    canvas.setRenderMode(CUT_MODE);
-                    turnToCutMode();
-                }
+
             }
         });
 

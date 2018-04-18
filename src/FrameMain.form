@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="FrameMain">
-  <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="16" column-count="13" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+  <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="19" column-count="13" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
       <xy x="130" y="20" width="1634" height="898"/>
@@ -13,7 +13,7 @@
     <children>
       <grid id="2fffb" binding="glPanel" layout-manager="FlowLayout" hgap="0" vgap="0" flow-align="1">
         <constraints>
-          <grid row="0" column="0" row-span="16" col-span="9" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+          <grid row="0" column="0" row-span="19" col-span="9" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
             <minimum-size width="1280" height="720"/>
             <maximum-size width="1600" height="900"/>
           </grid>
@@ -59,35 +59,9 @@
           <text value="Finish Draw"/>
         </properties>
       </component>
-      <component id="797c3" class="javax.swing.JButton" binding="cutButton">
-        <constraints>
-          <grid row="6" column="9" row-span="1" col-span="4" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
-            <minimum-size width="250" height="120"/>
-            <preferred-size width="250" height="120"/>
-            <maximum-size width="250" height="120"/>
-          </grid>
-        </constraints>
-        <properties>
-          <borderPainted value="false"/>
-          <contentAreaFilled value="false"/>
-          <font name="Copperplate Gothic Bold" size="30" style="0"/>
-          <foreground color="-1"/>
-          <hideActionText value="true"/>
-          <horizontalAlignment value="0"/>
-          <horizontalTextPosition value="0"/>
-          <icon value="imageButtoo.png"/>
-          <inheritsPopupMenu value="false"/>
-          <label value="Cut Mode"/>
-          <margin top="1" left="1" bottom="1" right="1"/>
-          <text value="Cut Mode"/>
-        </properties>
-        <clientProperties>
-          <html.disable class="java.lang.Boolean" value="false"/>
-        </clientProperties>
-      </component>
       <component id="75dcd" class="javax.swing.JButton" binding="saveButton">
         <constraints>
-          <grid row="13" column="9" row-span="1" col-span="4" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+          <grid row="16" column="9" row-span="1" col-span="4" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
             <minimum-size width="250" height="120"/>
             <preferred-size width="250" height="120"/>
             <maximum-size width="250" height="120"/>
@@ -112,30 +86,6 @@
       </component>
       <component id="d3665" class="javax.swing.JButton" binding="reshapeButton">
         <constraints>
-          <grid row="7" column="9" row-span="1" col-span="4" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
-            <minimum-size width="250" height="120"/>
-            <preferred-size width="250" height="120"/>
-            <maximum-size width="250" height="120"/>
-          </grid>
-        </constraints>
-        <properties>
-          <borderPainted value="false"/>
-          <contentAreaFilled value="false"/>
-          <font name="Copperplate Gothic Bold" size="30" style="0"/>
-          <foreground color="-1"/>
-          <hideActionText value="true"/>
-          <horizontalTextPosition value="0"/>
-          <icon value="imageButtoo.png"/>
-          <label value="Reshape Mode"/>
-          <margin top="1" left="1" bottom="1" right="1"/>
-          <text value="Reshape Mode"/>
-        </properties>
-        <clientProperties>
-          <html.disable class="java.lang.Boolean" value="false"/>
-        </clientProperties>
-      </component>
-      <component id="41e90" class="javax.swing.JButton" binding="strainButton">
-        <constraints>
           <grid row="8" column="9" row-span="1" col-span="4" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
             <minimum-size width="250" height="120"/>
             <preferred-size width="250" height="120"/>
@@ -150,14 +100,17 @@
           <hideActionText value="true"/>
           <horizontalTextPosition value="0"/>
           <icon value="imageButtoo.png"/>
-          <label value="Strain Mode"/>
+          <label value="Move Model"/>
           <margin top="1" left="1" bottom="1" right="1"/>
-          <text value="Strain Mode"/>
+          <text value="Move Model"/>
         </properties>
+        <clientProperties>
+          <html.disable class="java.lang.Boolean" value="false"/>
+        </clientProperties>
       </component>
       <component id="dd3f1" class="javax.swing.JButton" binding="resetButton">
         <constraints>
-          <grid row="10" column="10" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+          <grid row="13" column="10" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
             <minimum-size width="80" height="80"/>
             <preferred-size width="80" height="80"/>
             <maximum-size width="80" height="80"/>
@@ -184,7 +137,7 @@
       </component>
       <component id="36a09" class="javax.swing.JButton" binding="undoButton">
         <constraints>
-          <grid row="10" column="9" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+          <grid row="13" column="9" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
             <minimum-size width="80" height="80"/>
             <preferred-size width="80" height="80"/>
             <maximum-size width="80" height="80"/>
@@ -211,7 +164,7 @@
       </component>
       <component id="27f85" class="javax.swing.JButton" binding="clearButton">
         <constraints>
-          <grid row="10" column="11" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+          <grid row="13" column="11" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
             <minimum-size width="80" height="80"/>
             <preferred-size width="80" height="80"/>
             <maximum-size width="80" height="80"/>
@@ -239,7 +192,7 @@
       <grid id="8524c" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
-          <grid row="10" column="12" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="true"/>
+          <grid row="13" column="12" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="true"/>
         </constraints>
         <properties>
           <alignmentX value="0.0"/>
@@ -248,6 +201,53 @@
         <border type="none"/>
         <children/>
       </grid>
+      <component id="797c3" class="javax.swing.JButton" binding="cutButton">
+        <constraints>
+          <grid row="10" column="9" row-span="1" col-span="4" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+            <minimum-size width="250" height="120"/>
+            <preferred-size width="250" height="120"/>
+            <maximum-size width="250" height="120"/>
+          </grid>
+        </constraints>
+        <properties>
+          <borderPainted value="false"/>
+          <contentAreaFilled value="false"/>
+          <font name="Copperplate Gothic Bold" size="30" style="0"/>
+          <foreground color="-1"/>
+          <hideActionText value="true"/>
+          <horizontalAlignment value="0"/>
+          <horizontalTextPosition value="0"/>
+          <icon value="imageButtoo.png"/>
+          <inheritsPopupMenu value="false"/>
+          <label value="Select Color"/>
+          <margin top="1" left="1" bottom="1" right="1"/>
+          <text value="Select Color"/>
+        </properties>
+        <clientProperties>
+          <html.disable class="java.lang.Boolean" value="false"/>
+        </clientProperties>
+      </component>
+      <component id="41e90" class="javax.swing.JButton" binding="strainButton">
+        <constraints>
+          <grid row="9" column="9" row-span="1" col-span="4" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+            <minimum-size width="250" height="120"/>
+            <preferred-size width="250" height="120"/>
+            <maximum-size width="250" height="120"/>
+          </grid>
+        </constraints>
+        <properties>
+          <borderPainted value="false"/>
+          <contentAreaFilled value="false"/>
+          <font name="Copperplate Gothic Bold" size="30" style="0"/>
+          <foreground color="-1"/>
+          <hideActionText value="true"/>
+          <horizontalTextPosition value="0"/>
+          <icon value="imageButtoo.png"/>
+          <label value="Delete Model"/>
+          <margin top="1" left="1" bottom="1" right="1"/>
+          <text value="Delete Model"/>
+        </properties>
+      </component>
     </children>
   </grid>
 </form>

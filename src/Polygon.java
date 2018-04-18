@@ -25,6 +25,7 @@ public class Polygon {
     private Point middlePoint;
 
     public Point getMiddlePoint() {
+        calMiddlePoint();
         return middlePoint;
     }
 
