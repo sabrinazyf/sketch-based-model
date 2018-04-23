@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="FrameMain">
+  <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="6" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="130" y="20" width="1634" height="829"/>
+    </constraints>
+    <properties>
+      <font name="Consolas" size="22"/>
+      <foreground color="-16771007"/>
+    </properties>
+    <border type="none"/>
+    <children>
+      <component id="e517c" class="javax.swing.JButton" binding="firstButton">
+        <constraints>
+          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="0" indent="0" use-parent-layout="false">
+            <minimum-size width="255" height="120"/>
+            <preferred-size width="255" height="120"/>
+            <maximum-size width="255" height="120"/>
+          </grid>
+        </constraints>
+        <properties>
+          <borderPainted value="false"/>
+          <contentAreaFilled value="false"/>
+          <font name="Impact" size="30" style="0"/>
+          <foreground color="-1"/>
+          <hideActionText value="true"/>
+          <horizontalTextPosition value="0"/>
+          <icon value="imageButtoo.png"/>
+          <margin top="1" left="1" bottom="1" right="1"/>
+          <text value="Finish Draw"/>
+        </properties>
+      </component>
+      <component id="d3665" class="javax.swing.JButton" binding="secondButton">
+        <constraints>
+          <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="0" indent="0" use-parent-layout="false">
+            <minimum-size width="255" height="120"/>
+            <preferred-size width="255" height="120"/>
+            <maximum-size width="255" height="120"/>
+          </grid>
+        </constraints>
+        <properties>
+          <borderPainted value="false"/>
+          <contentAreaFilled value="false"/>
+          <font name="Impact" size="30" style="0"/>
+          <foreground color="-1"/>
+          <hideActionText value="true"/>
+          <horizontalTextPosition value="0"/>
+          <icon value="imageButtoo.png"/>
+          <label value="Edit Mode"/>
+          <margin top="1" left="1" bottom="1" right="1"/>
+          <text value="Edit Mode"/>
+        </properties>
+        <clientProperties>
+          <html.disable class="java.lang.Boolean" value="false"/>
+        </clientProperties>
+      </component>
+      <component id="41e90" class="javax.swing.JButton" binding="thirdButton">
+        <constraints>
+          <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="0" indent="0" use-parent-layout="false">
+            <minimum-size width="255" height="120"/>
+            <preferred-size width="255" height="120"/>
+            <maximum-size width="255" height="120"/>
+          </grid>
+        </constraints>
+        <properties>
+          <borderPainted value="false"/>
+          <contentAreaFilled value="false"/>
+          <font name="Impact" size="30" style="0"/>
+          <foreground color="-1"/>
+          <hideActionText value="true"/>
+          <horizontalTextPosition value="0"/>
+          <icon value="imageButtoo.png"/>
+          <label value="Delete Model"/>
+          <margin top="1" left="1" bottom="1" right="1"/>
+          <text value="Delete Model"/>
+        </properties>
+      </component>
+      <component id="797c3" class="javax.swing.JButton" binding="fourthButton">
+        <constraints>
+          <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="0" indent="0" use-parent-layout="false">
+            <minimum-size width="255" height="120"/>
+            <preferred-size width="255" height="120"/>
+            <maximum-size width="255" height="120"/>
+          </grid>
+        </constraints>
+        <properties>
+          <borderPainted value="false"/>
+          <contentAreaFilled value="false"/>
+          <font name="Impact" size="30" style="0"/>
+          <foreground color="-1"/>
+          <hideActionText value="true"/>
+          <horizontalAlignment value="0"/>
+          <horizontalTextPosition value="0"/>
+          <icon value="imageButtoo.png"/>
+          <inheritsPopupMenu value="false"/>
+          <label value="Select Color"/>
+          <margin top="1" left="1" bottom="1" right="1"/>
+          <text value="Select Color"/>
+        </properties>
+        <clientProperties>
+          <html.disable class="java.lang.Boolean" value="false"/>
+        </clientProperties>
+      </component>
+      <grid id="2fffb" binding="glPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+        <constraints>
+          <grid row="0" column="0" row-span="6" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+            <minimum-size width="1280" height="720"/>
+            <maximum-size width="1600" height="900"/>
+          </grid>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="86c02" class="javax.swing.JLabel" binding="modeLabel">
+            <constraints/>
+            <properties>
+              <alignmentX value="0.0"/>
+              <alignmentY value="0.0"/>
+              <font name="Impact" size="30" style="0"/>
+              <foreground color="-10183748"/>
+              <horizontalAlignment value="0"/>
+              <horizontalTextPosition value="0"/>
+              <maximumSize width="-1" height="30"/>
+              <minimumSize width="-1" height="30"/>
+              <preferredSize width="500" height="30"/>
+              <text value="Draw Mode"/>
+              <verticalAlignment value="0"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <component id="db23d" class="javax.swing.JButton" binding="fifthButton">
+        <constraints>
+          <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="0" indent="0" use-parent-layout="false">
+            <minimum-size width="255" height="120"/>
+            <preferred-size width="255" height="120"/>
+            <maximum-size width="255" height="120"/>
+          </grid>
+        </constraints>
+        <properties>
+          <borderPainted value="false"/>
+          <contentAreaFilled value="true"/>
+          <focusPainted value="false"/>
+          <focusable value="true"/>
+          <font name="Impact" size="30" style="0"/>
+          <foreground color="-1"/>
+          <hideActionText value="true"/>
+          <horizontalTextPosition value="0"/>
+          <icon value="imageButtoo.png"/>
+          <inheritsPopupMenu value="false"/>
+          <label value="Save Model"/>
+          <margin top="1" left="1" bottom="1" right="1"/>
+          <opaque value="true"/>
+          <text value="Save Model"/>
+        </properties>
+      </component>
+      <component id="c2898" class="javax.swing.JButton" binding="sixthButton">
+        <constraints>
+          <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="0" indent="0" use-parent-layout="false">
+            <minimum-size width="255" height="120"/>
+            <preferred-size width="255" height="120"/>
+            <maximum-size width="255" height="120"/>
+          </grid>
+        </constraints>
+        <properties>
+          <borderPainted value="false"/>
+          <contentAreaFilled value="true"/>
+          <focusPainted value="false"/>
+          <focusable value="true"/>
+          <font name="Impact" size="30" style="0"/>
+          <foreground color="-1"/>
+          <hideActionText value="true"/>
+          <horizontalTextPosition value="0"/>
+          <icon value="imageButtoo.png"/>
+          <inheritsPopupMenu value="false"/>
+          <label value="Save Model"/>
+          <margin top="1" left="1" bottom="1" right="1"/>
+          <opaque value="true"/>
+          <text value="Save Model"/>
+        </properties>
+      </component>
+    </children>
+  </grid>
+</form>
