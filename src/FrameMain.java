@@ -1,6 +1,8 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import com.jogamp.opengl.util.FPSAnimator;
 
@@ -18,6 +20,12 @@ public class FrameMain {
     private JLabel modeLabel;
     private JButton fifthButton;
     private JButton sixthButton;
+    private JButton blue;
+    private JButton pink;
+    private JButton yellow;
+    private JButton green;
+    private JButton grey;
+    private JButton orange;
     private static final int SHOW_OUTSIDELINE_MODE = 0;
     private static final int SHOW_CATLINE_MODE = 1;
     private static final int SHOW_FANLINE_MODE = 2;
@@ -28,6 +36,8 @@ public class FrameMain {
     private static final int SHOW_MODEL_MODE = 7;
     private static final int DRAW_MODE = -1;
     private static final int EDIT_MODE = -4;
+
+    private boolean isColorBarOpen = false;
 
     public void BuildFrame(DrawPolygonRenderer canvas) {
         JFrame frame = new JFrame();
@@ -62,10 +72,17 @@ public class FrameMain {
                     changeToDrawMode();
                 } else if (canvas.getRenderMode() == DRAW_MODE) {
                     //draw mode下为结束绘图
-                    canvas.beginBuilding();
-                    canvas.setRenderMode(SHOW_MODEL_MODE);
-                    changeToShowMode();
-                } else if (canvas.getRenderMode() == EDIT_MODE) {
+                    try {
+                        canvas.beginBuilding();
+                        canvas.setRenderMode(SHOW_MODEL_MODE);
+                        changeToShowMode();
+                    } catch (Exception except) {
+                        canvas.setRenderMode(DRAW_MODE);
+                        canvas.packup();
+                        canvas.clearPointList();
+                        changeToDrawMode();
+                    }
+                } else if (canvas.getRenderMode() == EDIT_MODE && canvas.getEditMode() == SHOW_MODEL_MODE) {
                     //edit mode下为结束编辑
                     canvas.setRenderMode(SHOW_MODEL_MODE);
                     changeToShowMode();
@@ -109,8 +126,13 @@ public class FrameMain {
                 }
 
                 //edit mode下为平滑当前选定模型
-                if (canvas.getRenderMode() == EDIT_MODE) {
+                if (canvas.getRenderMode() == EDIT_MODE && canvas.getEditMode() == SHOW_MODEL_MODE) {
                     //smooth
+//                    try {
+//                        canvas.smoothModel();
+//                    } catch (Exception except) {
+//                        System.out.println("An Error Occur.");
+//                    }
                     canvas.smoothModel();
                 }
             }
@@ -123,12 +145,10 @@ public class FrameMain {
                 //show mode下为清空所有
                 if (canvas.getRenderMode() == SHOW_MODEL_MODE) {
                     canvas.clearAll();
+                } else if (canvas.getRenderMode() == EDIT_MODE) {
+                    //                edit mode下为选择颜色
+                    closeOrOpenColorBar(!isColorBarOpen);
                 }
-
-                //edit mode下为选择颜色
-//                if (canvas.getRenderMode() == EDIT_MODE) {
-//                    //colour
-//                }
             }
         });
 
@@ -142,7 +162,7 @@ public class FrameMain {
 //                }
 
                 //edit mode下为删除选定模型
-                if (canvas.getRenderMode() == EDIT_MODE) {
+                if (canvas.getRenderMode() == EDIT_MODE && canvas.getEditMode() == SHOW_MODEL_MODE) {
                     //delete
                     canvas.deleteModel();
                 }
@@ -154,7 +174,7 @@ public class FrameMain {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //edit mode下为不保存退出
-                if (canvas.getRenderMode() == EDIT_MODE) {
+                if (canvas.getRenderMode() == EDIT_MODE && canvas.getEditMode() == SHOW_MODEL_MODE) {
                     canvas.setRenderMode(SHOW_MODEL_MODE);
                     canvas.undo();
                     changeToShowMode();
@@ -162,6 +182,48 @@ public class FrameMain {
             }
         });
 
+        //蓝色
+        blue.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                canvas.setColor(0);
+            }
+        });
+        //粉色
+        pink.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                canvas.setColor(1);
+            }
+        });
+        //黄色
+        yellow.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                canvas.setColor(2);
+            }
+        });
+        //绿色
+        green.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                canvas.setColor(3);
+            }
+        });
+        //灰色
+        grey.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                canvas.setColor(4);
+            }
+        });
+        //橙色
+        orange.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                canvas.setColor(5);
+            }
+        });
         changeToDrawMode();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
@@ -172,6 +234,15 @@ public class FrameMain {
         animator.start();
     }
 
+    private void closeOrOpenColorBar(boolean isOpen) {
+        isColorBarOpen = isOpen;
+        blue.setVisible(isOpen);
+        pink.setVisible(isOpen);
+        yellow.setVisible(isOpen);
+        green.setVisible(isOpen);
+        grey.setVisible(isOpen);
+        orange.setVisible(isOpen);
+    }
 
     private void changeToShowMode() {
         modeLabel.setText("Display Mode");
@@ -192,6 +263,8 @@ public class FrameMain {
         fifthButton.setText("Save Model");
 
         sixthButton.setVisible(false);
+
+        closeOrOpenColorBar(false);
     }
 
     private void changeToDrawMode() {
@@ -209,6 +282,8 @@ public class FrameMain {
         fourthButton.setVisible(false);
         fifthButton.setVisible(false);
         sixthButton.setVisible(false);
+
+        closeOrOpenColorBar(false);
     }
 
     private void changeToEditMode() {
@@ -231,6 +306,8 @@ public class FrameMain {
 
         sixthButton.setVisible(true);
         sixthButton.setText("Exit");
+
+        closeOrOpenColorBar(false);
     }
 
     public static void main(String[] args) {

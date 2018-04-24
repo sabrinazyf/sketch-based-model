@@ -12,8 +12,45 @@ public class Triangle {
         indexB = b;
         indexC = c;
     }
-
+    //首先用原模型来跑一边计算法向量，把能计算出正确法向量的ABC给存下来
+    //然后在其他时候就可以直接用这个顺序来跑了
     public Point countNormal(){
+        Point AB = new Point(a.getX() - b.getX(), a.getY() - b.getY(), a.getZ() - b.getZ());
+        Point AC = new Point(a.getX() - c.getX(), a.getY() - c.getY(), a.getZ() - c.getZ());
+        Point normal = AB.crossProduct(AC);
+//        if (a.getZ() < 0 || b.getZ() < 0 || c.getZ() < 0) {
+//            if (normal.getZ() > 0) {
+//                AB = new Point(b.getX() - a.getX(), b.getY() - a.getY(), b.getZ() - a.getZ());
+//                normal = AB.crossProduct(AC);
+//            }
+//        } else {
+//            if (normal.getZ() < 0) {
+//                AB = new Point(b.getX() - a.getX(), b.getY() - a.getY(), b.getZ() - a.getZ());
+//                normal = AB.crossProduct(AC);
+//            }
+//        }
+        normal = normal.normalize();
+        return normal;
+    }
+
+    public boolean isTriangleCorrect(){
+        Point AB = new Point(a.getX() - b.getX(), a.getY() - b.getY(), a.getZ() - b.getZ());
+        Point AC = new Point(a.getX() - c.getX(), a.getY() - c.getY(), a.getZ() - c.getZ());
+        Point normal = AB.crossProduct(AC);
+        boolean isCorrect = true;
+        if (a.getZ() < 0 || b.getZ() < 0 || c.getZ() < 0) {
+            if (normal.getZ() > 0) {
+                isCorrect = false;
+            }
+        } else {
+            if (normal.getZ() < 0) {
+                isCorrect = false;
+            }
+        }
+        return isCorrect;
+    }
+
+    public Point countNormalOld(){
         Point AB = new Point(a.getX() - b.getX(), a.getY() - b.getY(), a.getZ() - b.getZ());
         Point AC = new Point(a.getX() - c.getX(), a.getY() - c.getY(), a.getZ() - c.getZ());
         Point normal = AB.crossProduct(AC);

@@ -38,14 +38,21 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
     private LinkedList<Model> modelList = new LinkedList<>();
     private LinkedList<Model> oldModelList = new LinkedList<>();
     private int modelColor[] = new int[0];
+    private int lastColor[] = new int[0];
     private int thisModel = -1;
-    private boolean isMouseDiff = false;
+//    private boolean isMouseDiff = false;
 
+    private int color[] = {131, 205, 255,
+            255, 181, 197,
+            255, 250, 205,
+            127, 255, 212,
+            220, 220, 220,
+            255, 218, 185};
 
     private GLU glu;
     //    private Polygon renderPolygon = new Polygon();
     private Model renderModel = new Model();
-    private Model lastModel = new Model();
+//    private Model lastModel = new Model();
 
     private int renderMode;
     private int editMode = SHOW_MODEL_MODE;
@@ -55,6 +62,10 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
     private int lastMouseX, lastMouseY;
     private GL2 gl;
     private LinkedList<Point> pointList;
+
+    public int getEditMode() {
+        return editMode;
+    }
 
     //设定显示模式
     public void setRenderMode(int mode) {
@@ -137,6 +148,7 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
 //        }
         if (thisModel != -1) {
             modelList.get(thisModel).smooth(1, 0);
+//            modelList.get(thisModel).loopSub();
         }
     }
 
@@ -162,15 +174,15 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
         }
         gl.glPushMatrix();
 
-        if (renderMode == EDIT_MODE) {
-            for (int modelI = 0; modelI < modelList.size(); modelI++) {
-                Polygon renderPolygon = modelList.get(modelI).getBasedPolygon();
-                if (modelI == thisModel) {
-                    select2DMode(gl, renderPolygon);
-                    select3DMode(gl, renderPolygon, modelI);
-                }
-            }
-        }
+//        if (renderMode == EDIT_MODE) {
+//            for (int modelI = 0; modelI < modelList.size(); modelI++) {
+//                Polygon renderPolygon = modelList.get(modelI).getBasedPolygon();
+//                if (modelI == thisModel) {
+//                    select2DMode(gl, renderPolygon);
+//                    select3DMode(gl, renderPolygon, modelI);
+//                }
+//            }
+//        }
 
         if (renderMode == SHOW_MODEL_MODE) {
 //            float pivot[] = new float[2];
@@ -191,20 +203,24 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
         }
         for (int modelI = 0; modelI < modelList.size(); modelI++) {
             Polygon renderPolygon = modelList.get(modelI).getBasedPolygon();
-
+            countModelNum(mouseX, mouseY, gl);
             // 绘制原多边形
             if (renderMode == EDIT_MODE && thisModel == modelI) {
                 drawOutLine(gl, renderPolygon);
             }
 
-            select3DMode(gl, renderPolygon, modelI);
-            select2DMode(gl, renderPolygon);
+            if (modelI == thisModel) {
+                select2DMode(gl, renderPolygon);
+                select3DMode(gl, renderPolygon, modelI);
+            }
+
+//            select3DMode(gl, renderPolygon, modelI);
+//            select2DMode(gl, renderPolygon);
 
             if (renderMode == SHOW_MODEL_MODE || (renderMode == DRAW_MODE && modelList.size() > 0) || (renderMode == EDIT_MODE && editMode == SHOW_MODEL_MODE)) {
                 gl.glEnable(GL_MULTISAMPLE);
                 gl.glEnable(GL2.GL_LIGHTING);
                 gl.glEnable(GL2.GL_LIGHT0);
-//            gl.glEnable( GL2.GL_NORMALIZE );
 
                 // weak RED ambient
                 float[] ambientLight = {0f, 0.f, 0.f, 0f};
@@ -235,7 +251,10 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
                 gl.glNormalPointer(GL2.GL_FLOAT, 0, normalCoordBuffer);
                 gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
                 gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
-                gl.glColor3f(131 / 255.0f, 205 / 255.0f, 1.0f);
+                int R = color[modelColor[modelI] * 3];
+                int G = color[modelColor[modelI] * 3 + 1];
+                int B = color[modelColor[modelI] * 3 + 2];
+                gl.glColor3f(R / 255.0f, G / 255.0f, B / 255.0f);
                 int size = modelList.get(modelI).getTriCoords().length / 3;
                 if (renderMode == CUT_SELECT_MODE) {
                     size = modelList.get(modelI).getRightTriCoords().length / 3;
@@ -279,9 +298,9 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
         }
     }
 
-    private void editModeChange(GL2 gl, Polygon renderPolygon) {
-        select2DMode(gl, renderPolygon);
-    }
+//    private void editModeChange(GL2 gl, Polygon renderPolygon) {
+//        select2DMode(gl, renderPolygon);
+//    }
 
     //模式大于0时，2D情况下的选择模式
     private void select2DMode(GL2 gl, Polygon renderPolygon) {
@@ -397,9 +416,6 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
     //模式大于0时，3D情况下的选择模式
     private void select3DMode(GL2 gl, Polygon renderPolygon, int modelI) {
         if (renderMode == EDIT_MODE) {
-
-            countModelNum(mouseX, mouseY, gl);
-
             if (editMode == SHOW_TRIANGLE_MODE || editMode == SHOW_LIFT_MODE) {
                 for (int i = 0; i < modelList.get(modelI).getModelTriangle().size(); i++) {
                     if (editMode != SHOW_LIFT_MODE) {
@@ -646,7 +662,7 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
         if (mouse.getButton() == MouseEvent.BUTTON1) {
             if (renderMode == EDIT_MODE) {
 //                countModelNum(mouse.getX(), mouse.getY());
-                isMouseDiff = (mouse.getX() != mouseX && mouse.getY() != mouseY);
+//                isMouseDiff = (mouse.getX() != mouseX && mouse.getY() != mouseY);
                 mouseX = mouse.getX();
                 mouseY = mouse.getY();
                 editMode = SHOW_MODEL_MODE;
@@ -1004,10 +1020,22 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
                 middlePivot[0] = 0.5f * (middlePivot[0] + (float) renderModel.getBasedPolygon().getMiddlePoint().getX());
                 middlePivot[1] = 0.5f * (middlePivot[1] + (float) renderModel.getBasedPolygon().getMiddlePoint().getY());
             }
+            int[] newColor = new int[modelColor.length + 1];
+            System.arraycopy(modelColor, 0, newColor, 0, modelColor.length);
+            newColor[modelList.size() - 1] = 0;
+            modelColor = newColor;
+
             thisModel = modelList.size() - 1;
             renderMode = SHOW_MODEL_MODE;
         }
         pointList.clear();
+    }
+
+    //设置模型颜色
+    public void setColor(int i) {
+        if (renderMode == EDIT_MODE && editMode == SHOW_MODEL_MODE && thisModel != -1) {
+            modelColor[thisModel] = i;
+        }
     }
 
     //更改大于0时的显示模式
@@ -1029,6 +1057,9 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
         oldModelList.addAll(modelList);
         lastMiddlePivot[0] = middlePivot[0];
         lastMiddlePivot[1] = middlePivot[1];
+
+        lastColor = new int[modelColor.length];
+        System.arraycopy(modelColor, 0, lastColor, 0, modelColor.length);
         if (oldModelList.size() == 0) {
             lastMiddlePivot[0] = 0f;
             lastMiddlePivot[1] = 0f;
@@ -1043,6 +1074,10 @@ public class DrawPolygonRenderer extends GLCanvas implements GLEventListener, Mo
         modelList.addAll(oldModelList);
 //        modelCount = oldModelList.size();
         thisModel = modelList.size() - 1;
+
+        modelColor = new int[lastColor.length];
+        System.arraycopy(lastColor, 0, modelColor, 0, lastColor.length);
+
         middlePivot[0] = lastMiddlePivot[0];
         middlePivot[1] = lastMiddlePivot[1];
 //        modelCount = modelList.size();
